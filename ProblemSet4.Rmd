@@ -38,8 +38,18 @@ math_assessment_09_10 <- read.csv("math-achievement-sch-sy2009-10.csv")
 math_assessment_09_10 <- janitor::clean_names(math_assessment_09_10)
 
 #math_assessment_13_14 <- read.csv("https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2013-14.csv")
+math_assessment_10_11 <- read.csv("math-achievement-sch-sy2010-11.csv")
+math_assessment_10_11 <- janitor::clean_names(math_assessment_10_11)
+
+math_assessment_11_12 <- read.csv("math-achievement-sch-sy2011-12.csv")
+math_assessment_11_12 <- janitor::clean_names(math_assessment_11_12)
+
+math_assessment_12_13 <- read.csv("math-achievement-sch-sy2012-13.csv")
+math_assessment_12_13 <- janitor::clean_names(math_assessment_12_13)
+
 math_assessment_13_14 <- read.csv("math-achievement-sch-sy2013-14.csv")
 math_assessment_13_14 <- janitor::clean_names(math_assessment_13_14)
+
 
 head(treated_schools)
 ```
@@ -75,12 +85,39 @@ head(treated_all_cohorts)
 treated_math_09_10 <- select(math_assessment_09_10, stnam, leaid, 
                               leanm, ncessch, schnam09, all_mth00pctprof_0910)
 
+treated_math_10_11 <- select(math_assessment_10_11, stnam, leaid, 
+                              leanm10, ncessch, schnam10, all_mth00pctprof_1011)
+
+treated_math_11_12 <- select(math_assessment_11_12, stnam, leaid, 
+                              leanm, ncessch, schnam11, all_mth00pctprof_1112)
+
+treated_math_12_13 <- select(math_assessment_12_13, stnam, leaid, 
+                              leanm, ncessch, schnam, all_mth00pctprof_1213)
+
 treated_math_13_14 <- select(math_assessment_13_14, stnam, leaid, 
                               leanm, ncessch, schnam, all_mth00pctprof_1314)
 
-merged_math <- merge(treated_math_09_10, treated_math_13_14, by= "ncessch")
+merged_math <- merge(treated_math_09_10, treated_math_10_11, by= "ncessch")
 merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
-                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1314)
+                      leaid.x, leanm, all_mth00pctprof_0910, all_mth00pctprof_1011)
+
+merged_math <- merge(merged_math, treated_math_11_12, by= "ncessch")
+merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
+                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
+                      all_mth00pctprof_1112)
+
+merged_math <- merge(merged_math, treated_math_12_13, by= "ncessch")
+merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
+                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
+                      all_mth00pctprof_1112, all_mth00pctprof_1213)
+
+merged_math <- merge(merged_math, treated_math_13_14, by= "ncessch")
+merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
+                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
+                      all_mth00pctprof_1112, all_mth00pctprof_1213, all_mth00pctprof_1314)
+
+
+
 merged_math
 ```
 ```{r}
@@ -97,19 +134,25 @@ results_treated <- filter(results_treated,
                                  all_mth00pctprof_1314) )
 
 results_treated <- select(results_treated, ncessch, schnam09, stnam.x, 
-                          leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1314)
+                          leaid.x, leanm.x, all_mth00pctprof_0910, 
+                          all_mth00pctprof_1011, all_mth00pctprof_1112,
+                          all_mth00pctprof_1213, all_mth00pctprof_1314)
 
 colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
-                               "lea_name", "scores_0910", "scores_1314")
+                               "lea_name", "scores_0910", "scores_1011",
+                               "scores_1112", "scores_1213", "scores_1314")
 
 results_treated$scores_0910 <- as.numeric(results_treated$scores_0910)
+results_treated$scores_1011 <- as.numeric(results_treated$scores_1011)
+results_treated$scores_1112 <- as.numeric(results_treated$scores_1112)
+results_treated$scores_1213 <- as.numeric(results_treated$scores_1213)
 results_treated$scores_1314 <- as.numeric(results_treated$scores_1314)
 
 results_treated
 
 ```
 ```{r include=TRUE}
-binded_data <- melt(results_treated, measure = 6:7)
+binded_data <- melt(results_treated, measure = 6:10)
 
 
 binded_data %>% 
