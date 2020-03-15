@@ -1,6 +1,6 @@
 ---
-title: "PBS KIDS Measure Up"
-author: "Ke-li Chiu & Diego Mamanche Castellanos"
+title: "Education in USA"
+author: "Ke-li Chiu, Sharon Allman & Diego Mamanche Castellanos"
 date: "11/03/2020"
 output: pdf_document
 ---
