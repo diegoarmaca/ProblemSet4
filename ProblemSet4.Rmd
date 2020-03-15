@@ -131,6 +131,18 @@ results_treated <- filter(results_treated,
 
 results_treated <- filter(results_treated, 
                           !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1011) )
+
+results_treated <- filter(results_treated, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1112) )
+
+results_treated <- filter(results_treated, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1213) )
+
+results_treated <- filter(results_treated, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
                                  all_mth00pctprof_1314) )
 
 results_treated <- select(results_treated, ncessch, schnam09, stnam.x, 
@@ -165,8 +177,9 @@ binded_data %>%
   theme_minimal() +
   labs(x = "Periods",
        y = "Percentage",
-       color = "Person got a new racket") +
+       color = "Groups") +
   scale_color_brewer(palette = "Set1")
+
 
 ```
 
@@ -175,4 +188,25 @@ binded_data %>%
 ```{r}
 ### Create Control Group ###
 
+merged_math_cleaned <- merged_math
+
+merged_math_cleaned <- filter(merged_math,
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_0910) )
+
+merged_math_cleaned <- filter(merged_math, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1011) )
+
+merged_math_cleaned <- filter(merged_math, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1112) )
+
+merged_math_cleaned <- filter(merged_math, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1213) )
+
+merged_math_cleaned <- filter(merged_math, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1314) )
 ```
