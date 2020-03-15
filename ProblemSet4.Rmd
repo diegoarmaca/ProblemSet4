@@ -1,0 +1,135 @@
+---
+title: "PBS KIDS Measure Up"
+author: "Ke-li Chiu & Diego Mamanche Castellanos"
+date: "11/03/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, include = FALSE)## R Markdown
+```
+
+```{r}
+#Set up the environment
+library(readxl)
+library(dplyr)
+library(tidyr)
+#library(data.table) #Useful to transponse a dataframe
+library(ggplot2)
+library(reshape2)
+
+setwd("~/Experimental Design for Data Science/ProblemSet4")
+
+```
+
+```{r}
+###Upload datasets
+
+#online versions
+
+#url_treated <- "https://www2.ed.gov/programs/sif/data/sy1011-1314.xlsx"
+#treated_schools <- read_excel(url_treated)
+treated_schools <- read_excel("sy1011-1314.xlsx")
+treated_schools <- janitor::clean_names(treated_schools)
+
+
+#math_assessment_09-10 <- read.csv("https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2009-10.csv")
+math_assessment_09_10 <- read.csv("math-achievement-sch-sy2009-10.csv")
+math_assessment_09_10 <- janitor::clean_names(math_assessment_09_10)
+
+#math_assessment_13_14 <- read.csv("https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2013-14.csv")
+math_assessment_13_14 <- read.csv("math-achievement-sch-sy2013-14.csv")
+math_assessment_13_14 <- janitor::clean_names(math_assessment_13_14)
+
+head(treated_schools)
+```
+
+```{r}
+#
+
+treated_all_cohorts <- filter(treated_schools, 
+                              sy201011sig_model != is.na(sy201011sig_model) &
+                              sy201112sig_model != is.na(sy201112sig_model) &
+                              sy201213sig_model != is.na(sy201213sig_model) &
+                              sy201314sig_model != is.na(sy201314sig_model) &
+                              ncessch_1011 == ncessch_1112 &
+                              ncessch_1011 == ncessch_1213 &
+                              ncessch_1011 == ncessch_1314 &
+                              ncessch_1112 == ncessch_1213 &
+                              ncessch_1112 == ncessch_1314 &
+                              ncessch_1213 == ncessch_1314
+                              )
+treated_all_cohorts <- select(treated_all_cohorts, state, leaid_10_11, 
+                           leanm_1011, ncessch_1011, schnam_1011)
+
+treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
+
+treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
+
+colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name","ncessch","school_name")
+
+
+head(treated_all_cohorts)
+```
+```{r}
+treated_math_09_10 <- select(math_assessment_09_10, stnam, leaid, 
+                              leanm, ncessch, schnam09, all_mth00pctprof_0910)
+
+treated_math_13_14 <- select(math_assessment_13_14, stnam, leaid, 
+                              leanm, ncessch, schnam, all_mth00pctprof_1314)
+
+merged_math <- merge(treated_math_09_10, treated_math_13_14, by= "ncessch")
+merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
+                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1314)
+merged_math
+```
+```{r}
+### Create Treatment DataSet ###
+
+results_treated <- merge(treated_all_cohorts, merged_math, by= "ncessch")
+
+results_treated <- filter(results_treated,
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_0910) )
+
+results_treated <- filter(results_treated, 
+                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                                 all_mth00pctprof_1314) )
+
+results_treated <- select(results_treated, ncessch, schnam09, stnam.x, 
+                          leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1314)
+
+colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "scores_0910", "scores_1314")
+
+results_treated$scores_0910 <- as.numeric(results_treated$scores_0910)
+results_treated$scores_1314 <- as.numeric(results_treated$scores_1314)
+
+results_treated
+
+```
+```{r include=TRUE}
+binded_data <- melt(results_treated, measure = 6:7)
+
+
+binded_data %>% 
+  ggplot(aes(x = variable,
+             y = value
+             #color = state
+             )) +
+  geom_point() +
+  geom_line(aes(group = ncessch), alpha = 0.2) +
+  theme_minimal() +
+  labs(x = "Periods",
+       y = "Percentage",
+       color = "Person got a new racket") +
+  scale_color_brewer(palette = "Set1")
+
+```
+
+
+
+```{r}
+### Create Control Group ###
+
+```
