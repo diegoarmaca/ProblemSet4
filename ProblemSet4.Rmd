@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = FALSE, include = FALSE)## R Markdown
 library(readxl)
 library(dplyr)
 library(tidyr)
-#library(data.table) #Useful to transponse a dataframe
 library(ggplot2)
 library(reshape2)
 library(stringr)
@@ -76,7 +75,6 @@ treated_all_cohorts <- select(treated_all_cohorts, state, leaid_10_11,
 
 treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
 
-treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
 
 colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name","ncessch","school_name")
 
@@ -128,23 +126,23 @@ merged_math
 results_treated <- merge(treated_all_cohorts, merged_math, by= "ncessch")
 
 results_treated <- filter(results_treated,
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_0910) )
 
 results_treated <- filter(results_treated, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1011) )
 
 results_treated <- filter(results_treated, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1112) )
 
 results_treated <- filter(results_treated, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1213) )
 
 results_treated <- filter(results_treated, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1314) )
 
 results_treated <- select(results_treated, ncessch, schnam09, stnam.x, 
@@ -156,18 +154,16 @@ colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "scores_0910", "scores_1011",
                                "scores_1112", "scores_1213", "scores_1314")
 
-results_treated$scores_0910 <- as.numeric(results_treated$scores_0910)
-results_treated$scores_1011 <- as.numeric(results_treated$scores_1011)
-results_treated$scores_1112 <- as.numeric(results_treated$scores_1112)
-results_treated$scores_1213 <- as.numeric(results_treated$scores_1213)
-results_treated$scores_1314 <- as.numeric(results_treated$scores_1314)
+results_control[,6:length(results_control)] <- 
+sapply(results_control[,6:length(results_control)], function(x) as.numeric(x))
 
 results_treated
 
 ```
 ```{r include=TRUE}
 binded_data <- melt(results_treated, measure = 6:10)
-
+binded_data[,7] <- 
+sapply(binded_data[,7], function(x) as.numeric(x))
 
 binded_data %>% 
   ggplot(aes(x = variable,
@@ -189,7 +185,7 @@ ggplot(results_treated, aes(x=state)) +
 
 
 
-```{r}
+```{r include=TRUE}
 ### Create Control Group ###
 
 merged_math_cleaned <- merged_math
@@ -220,13 +216,15 @@ merged_math_cleaned <- filter(merged_math,
 results_control <- data.frame()
 
 for (i in unique(results_treated$state)) {
+    print(i)
     count_state <- count(filter(results_treated, state == i))
-    #sample_by_state <- sample(merged_math_cleaned[
-    #  nrow(filter(merged_math_cleaned, stnam.x == "FLORIDA")),],i)
-    sample_by_state <- merged_math_cleaned[sample(nrow(filter(merged_math_cleaned, 
+    
+    sample_by_state <- merged_math_cleaned[sample(row.names(filter(merged_math_cleaned, 
                                                               stnam.x == i)),
                                                   as.numeric(count_state)),]
+    print(sample_by_state)
     results_control <- rbind(results_control, sample_by_state)
+    
     }
 
 
