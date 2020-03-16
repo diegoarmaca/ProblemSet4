@@ -68,7 +68,11 @@ treated_all_cohorts <- filter(treated_schools,
                               ncessch_1011 == ncessch_1314 &
                               ncessch_1112 == ncessch_1213 &
                               ncessch_1112 == ncessch_1314 &
-                              ncessch_1213 == ncessch_1314
+                              ncessch_1213 == ncessch_1314 &
+                              sy201011sig_model == "Turnaround" &
+                              sy201112sig_model == "Turnaround" &
+                              sy201213sig_model == "Turnaround" &
+                              sy201314sig_model == "Turnaround"
                               )
 treated_all_cohorts <- select(treated_all_cohorts, state, leaid_10_11, 
                            leanm_1011, ncessch_1011, schnam_1011)
