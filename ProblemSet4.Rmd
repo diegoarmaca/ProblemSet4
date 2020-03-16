@@ -17,7 +17,7 @@ library(tidyr)
 library(ggplot2)
 library(reshape2)
 library(stringr)
-
+#library(groom)
 
 setwd("~/Experimental Design for Data Science/ProblemSet4")
 
@@ -158,11 +158,11 @@ results_treated
 
 ```
 ```{r include=TRUE}
-dif_in_dif_treated <- melt(results_treated, measure = 6:10)
-dif_in_dif_treated[,7] <- 
-sapply(dif_in_dif_treated[,7], function(x) as.numeric(x))
+diff_in_diff_treated <- melt(results_treated, measure = 6:10)
+diff_in_diff_treated[,7] <- 
+sapply(diff_in_diff_treated[,7], function(x) as.numeric(x))
 
-dif_in_dif_treated %>% 
+diff_in_diff_treated %>% 
   ggplot(aes(x = variable,
              y = value
              #color = state
@@ -223,6 +223,7 @@ for (i in unique(results_treated$state)) {
     
     filter_by_state <- which(merged_math_cleaned$stnam.x == i)
     
+    set.seed(123)
     sample_by_state <- merged_math_cleaned[sample(filter_by_state,
                                                   as.numeric(count_state)),]
     
@@ -234,11 +235,12 @@ colnames(results_control) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "scores_0910", "scores_1011",
                                "scores_1112", "scores_1213", "scores_1314")
 
-dif_in_dif_controled <- melt(results_control, measure = 6:10)
-dif_in_dif_controled[,7] <- 
-sapply(dif_in_dif_controled[,7], function(x) as.numeric(x))
 
-dif_in_dif_controled %>% 
+diff_in_diff_controled <- melt(results_control, measure = 6:10)
+diff_in_diff_controled[,7] <- 
+sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
+
+diff_in_diff_controled %>% 
   ggplot(aes(x = variable,
              y = value
              #color = state
@@ -256,12 +258,14 @@ ggplot(results_control, aes(x=state)) +
 
 ```
 ```{r include=TRUE}
-dif_in_dif_treated <- mutate(dif_in_dif_treated, sig_program = "yes")
-dif_in_dif_controled <- mutate(dif_in_dif_controled, sig_program = "no")
+### Create diff in diff dataset with both treated and controlled groups ###
 
-dif_in_dif_both <- rbind(dif_in_dif_controled, dif_in_dif_treated)
+diff_in_diff_treated <- mutate(diff_in_diff_treated, sig_program = "1")
+diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
 
-dif_in_dif_both %>% 
+diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
+
+diff_in_diff_both %>% 
   ggplot(aes(x = variable,
              y = value,
              color = sig_program
@@ -274,5 +278,17 @@ dif_in_dif_both %>%
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
 
+
+```
+
+```{r include=TRUE}
+
+cohort1 <- filter(diff_in_diff_both, variable %in% c("scores_0910","scores_1011"))
+
+
+diff_in_diff_cohort1_model <- lm(value ~ sig_program*variable, 
+                         data = cohort1)
+
+summary(diff_in_diff_cohort1_model)
 
 ```
