@@ -154,9 +154,6 @@ colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "scores_0910", "scores_1011",
                                "scores_1112", "scores_1213", "scores_1314")
 
-results_control[,6:length(results_control)] <- 
-sapply(results_control[,6:length(results_control)], function(x) as.numeric(x))
-
 results_treated
 
 ```
