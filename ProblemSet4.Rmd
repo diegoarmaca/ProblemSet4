@@ -17,6 +17,8 @@ library(tidyr)
 #library(data.table) #Useful to transponse a dataframe
 library(ggplot2)
 library(reshape2)
+library(stringr)
+
 
 setwd("~/Experimental Design for Data Science/ProblemSet4")
 
@@ -180,6 +182,8 @@ binded_data %>%
        color = "Groups") +
   scale_color_brewer(palette = "Set1")
 
+ggplot(results_treated, aes(x=state)) +
+  geom_bar()
 
 ```
 
@@ -189,6 +193,9 @@ binded_data %>%
 ### Create Control Group ###
 
 merged_math_cleaned <- merged_math
+
+merged_math_cleaned <- filter(merged_math, !(ncessch %in% 
+                                as.numeric(treated_schools$ncessch_1011)))
 
 merged_math_cleaned <- filter(merged_math,
                           !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
@@ -209,4 +216,22 @@ merged_math_cleaned <- filter(merged_math,
 merged_math_cleaned <- filter(merged_math, 
                           !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
                                  all_mth00pctprof_1314) )
+
+results_control <- data.frame()
+
+for (i in unique(results_treated$state)) {
+    count_state <- count(filter(results_treated, state == i))
+    #sample_by_state <- sample(merged_math_cleaned[
+    #  nrow(filter(merged_math_cleaned, stnam.x == "FLORIDA")),],i)
+    sample_by_state <- merged_math_cleaned[sample(nrow(filter(merged_math_cleaned, 
+                                                              stnam.x == i)),
+                                                  as.numeric(count_state)),]
+    results_control <- rbind(results_control, sample_by_state)
+    }
+
+
+
+ggplot(results_control, aes(x=stnam.x)) +
+  geom_bar()
+
 ```
