@@ -158,11 +158,11 @@ results_treated
 
 ```
 ```{r include=TRUE}
-binded_data <- melt(results_treated, measure = 6:10)
-binded_data[,7] <- 
-sapply(binded_data[,7], function(x) as.numeric(x))
+dif_in_dif_treated <- melt(results_treated, measure = 6:10)
+dif_in_dif_treated[,7] <- 
+sapply(dif_in_dif_treated[,7], function(x) as.numeric(x))
 
-binded_data %>% 
+dif_in_dif_treated %>% 
   ggplot(aes(x = variable,
              y = value
              #color = state
@@ -213,20 +213,40 @@ merged_math_cleaned <- filter(merged_math,
 results_control <- data.frame()
 
 for (i in unique(results_treated$state)) {
-    print(i)
+    
     count_state <- count(filter(results_treated, state == i))
     
-    sample_by_state <- merged_math_cleaned[sample(row.names(filter(merged_math_cleaned, 
-                                                              stnam.x == i)),
+    filter_by_state <- which(merged_math_cleaned$stnam.x == i)
+    
+    sample_by_state <- merged_math_cleaned[sample(filter_by_state,
                                                   as.numeric(count_state)),]
-    print(sample_by_state)
+    
     results_control <- rbind(results_control, sample_by_state)
     
     }
 
+colnames(results_control) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "scores_0910", "scores_1011",
+                               "scores_1112", "scores_1213", "scores_1314")
 
+dif_in_dif_controled <- melt(results_control, measure = 6:10)
+dif_in_dif_controled[,7] <- 
+sapply(dif_in_dif_controled[,7], function(x) as.numeric(x))
 
-ggplot(results_control, aes(x=stnam.x)) +
+dif_in_dif_controled %>% 
+  ggplot(aes(x = variable,
+             y = value
+             #color = state
+             )) +
+  geom_point() +
+  geom_line(aes(group = ncessch), alpha = 0.2) +
+  theme_minimal() +
+  labs(x = "Periods",
+       y = "Percentage",
+       color = "Groups") +
+  scale_color_brewer(palette = "Set1")
+
+ggplot(results_control, aes(x=state)) +
   geom_bar()
 
 ```
