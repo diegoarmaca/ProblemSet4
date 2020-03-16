@@ -187,27 +187,32 @@ ggplot(results_treated, aes(x=state)) +
 
 merged_math_cleaned <- merged_math
 
-merged_math_cleaned <- filter(merged_math, !(ncessch %in% 
-                                as.numeric(treated_schools$ncessch_1011)))
+unique_treated_schools <- melt(treated_schools, measure = 10:13)
 
-merged_math_cleaned <- filter(merged_math,
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+unique_treated_schools <- unique(unique_treated_schools$value)
+
+merged_math_cleaned <- filter(merged_math, !(ncessch %in% 
+                                as.numeric(unique_treated_schools)))
+
+
+merged_math_cleaned <- filter(merged_math_cleaned,
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_0910) )
 
-merged_math_cleaned <- filter(merged_math, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+merged_math_cleaned <- filter(merged_math_cleaned, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1011) )
 
-merged_math_cleaned <- filter(merged_math, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+merged_math_cleaned <- filter(merged_math_cleaned, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1112) )
 
-merged_math_cleaned <- filter(merged_math, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+merged_math_cleaned <- filter(merged_math_cleaned, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1213) )
 
-merged_math_cleaned <- filter(merged_math, 
-                          !grepl("([0-9]+[-][0-9]+|[a-zA-Z]+[0-9]+|[a-zA-z]+)",
+merged_math_cleaned <- filter(merged_math_cleaned, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1314) )
 
 results_control <- data.frame()
@@ -248,5 +253,26 @@ dif_in_dif_controled %>%
 
 ggplot(results_control, aes(x=state)) +
   geom_bar()
+
+```
+```{r include=TRUE}
+dif_in_dif_treated <- mutate(dif_in_dif_treated, sig_program = "yes")
+dif_in_dif_controled <- mutate(dif_in_dif_controled, sig_program = "no")
+
+dif_in_dif_both <- rbind(dif_in_dif_controled, dif_in_dif_treated)
+
+dif_in_dif_both %>% 
+  ggplot(aes(x = variable,
+             y = value,
+             color = sig_program
+             )) +
+  geom_point() +
+  geom_line(aes(group = ncessch), alpha = 0.2) +
+  theme_minimal() +
+  labs(x = "Periods",
+       y = "Percentage",
+       color = "SIG pogram") +
+  scale_color_brewer(palette = "Set1")
+
 
 ```
