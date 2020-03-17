@@ -166,9 +166,12 @@ diff_in_diff_treated <- melt(results_treated, measure = 6:10)
 diff_in_diff_treated[,7] <- 
 sapply(diff_in_diff_treated[,7], function(x) as.numeric(x))
 
+colnames(diff_in_diff_treated) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "cohort","percentage")
+
 diff_in_diff_treated %>% 
-  ggplot(aes(x = variable,
-             y = value
+  ggplot(aes(x = cohort,
+             y = percentage
              #color = state
              )) +
   geom_point() +
@@ -244,9 +247,12 @@ diff_in_diff_controled <- melt(results_control, measure = 6:10)
 diff_in_diff_controled[,7] <- 
 sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
 
+colnames(diff_in_diff_controled) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "cohort","percentage")
+
 diff_in_diff_controled %>% 
-  ggplot(aes(x = variable,
-             y = value
+  ggplot(aes(x = cohort,
+             y = percentage
              #color = state
              )) +
   geom_point() +
@@ -270,14 +276,14 @@ diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
 diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
 
 diff_in_diff_both %>% 
-  ggplot(aes(x = variable,
-             y = value,
+  ggplot(aes(x = cohort,
+             y = percentage,
              color = sig_program
              )) +
   geom_point() +
   geom_line(aes(group = ncessch), alpha = 0.2) +
   theme_minimal() +
-  labs(x = "Periods",
+  labs(x = "Cohorts",
        y = "Percentage",
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
@@ -287,12 +293,42 @@ diff_in_diff_both %>%
 
 ```{r include=TRUE}
 
-cohort1 <- filter(diff_in_diff_both, variable %in% c("scores_0910","scores_1011"))
+cohort1 <- filter(diff_in_diff_both, cohort %in% c("scores_0910","scores_1011"))
+cohort1$cohort <- if_else(cohort1$cohort == "scores_0910", "0","1")
 
+cohort1$sig_program <- as.factor(cohort1$sig_program)
+cohort1$cohort <- as.factor(cohort1$cohort)
 
-diff_in_diff_cohort1_model <- lm(value ~ sig_program*variable, 
+diff_in_diff_cohort1_model <- lm(percentage ~ sig_program*cohort, 
                          data = cohort1)
 
 summary(diff_in_diff_cohort1_model)
 
+```
+```{r include=TRUE}
+
+cohort3 <- filter(diff_in_diff_both, cohort %in% c("scores_1112","scores_1213"))
+cohort3$cohort <- if_else(cohort3$cohort == "scores_1112", "0","1")
+
+cohort3$sig_program <- as.factor(cohort3$sig_program)
+cohort3$cohort <- as.factor(cohort3$cohort)
+
+diff_in_diff_cohort3_model <- lm(percentage ~ sig_program*cohort, 
+                         data = cohort3)
+
+summary(diff_in_diff_cohort3_model)
+
+```
+```{r include=TRUE}
+
+cohort4 <- filter(diff_in_diff_both, cohort %in% c("scores_1213","scores_1314"))
+cohort4$cohort <- if_else(cohort4$cohort == "scores_1213", "0","1")
+
+cohort4$sig_program <- as.factor(cohort4$sig_program)
+cohort4$cohort <- as.factor(cohort4$cohort)
+
+diff_in_diff_cohort4_model <- lm(percentage ~ sig_program*cohort, 
+                         data = cohort4)
+
+summary(diff_in_diff_cohort4_model)
 ```
