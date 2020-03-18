@@ -26,28 +26,29 @@ setwd("~/Experimental Design for Data Science/ProblemSet4")
 ```{r}
 ###Upload datasets
 
-#online versions
 
-#url_treated <- "https://www2.ed.gov/programs/sif/data/sy1011-1314.xlsx"
-#treated_schools <- read_excel(url_treated)
+#https://www2.ed.gov/programs/sif/data/sy1011-1314.xlsx
 treated_schools <- read_excel("sy1011-1314.xlsx")
 treated_schools <- janitor::clean_names(treated_schools)
 
 
-#math_assessment_09-10 <- read.csv("https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2009-10.csv")
+#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2009-10.csv
 math_assessment_09_10 <- read.csv("math-achievement-sch-sy2009-10.csv")
 math_assessment_09_10 <- janitor::clean_names(math_assessment_09_10)
 
-#math_assessment_13_14 <- read.csv("https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2013-14.csv")
+#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2010-11.csv
 math_assessment_10_11 <- read.csv("math-achievement-sch-sy2010-11.csv")
 math_assessment_10_11 <- janitor::clean_names(math_assessment_10_11)
 
+#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2011-12.csv
 math_assessment_11_12 <- read.csv("math-achievement-sch-sy2011-12.csv")
 math_assessment_11_12 <- janitor::clean_names(math_assessment_11_12)
 
+#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2012-13.csv
 math_assessment_12_13 <- read.csv("math-achievement-sch-sy2012-13.csv")
 math_assessment_12_13 <- janitor::clean_names(math_assessment_12_13)
 
+#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2013-14.csv
 math_assessment_13_14 <- read.csv("math-achievement-sch-sy2013-14.csv")
 math_assessment_13_14 <- janitor::clean_names(math_assessment_13_14)
 
@@ -56,6 +57,7 @@ head(treated_schools)
 ```
 
 ```{r}
+
 #
 
 treated_all_cohorts <- filter(treated_schools, 
@@ -161,6 +163,7 @@ colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
 results_treated
 
 ```
+# TREATED GROUP BY COHORTS  
 ```{r include=TRUE}
 diff_in_diff_treated <- melt(results_treated, measure = 6:10)
 diff_in_diff_treated[,7] <- 
@@ -188,7 +191,7 @@ ggplot(results_treated, aes(x=state)) +
 ```
 
 
-
+# CONTROL GROUP BY COHORTS (Created randomly, keeping treated group distribution) 
 ```{r include=TRUE}
 ### Create Control Group ###
 
@@ -267,6 +270,9 @@ ggplot(results_control, aes(x=state)) +
   geom_bar()
 
 ```
+
+# GRAPH OF TREATED AND CONTROLLED GROUPS BY COHORTS 
+
 ```{r include=TRUE}
 ### Create diff in diff dataset with both treated and controlled groups ###
 
@@ -290,7 +296,9 @@ diff_in_diff_both %>%
 
 
 ```
+# APPLYING DIFF IN DIFF TO BY COHORTS 
 
+COHORT 2009-10 AND 2010-11
 ```{r include=TRUE}
 
 cohort1 <- filter(diff_in_diff_both, cohort %in% c("scores_0910","scores_1011"))
@@ -305,6 +313,25 @@ diff_in_diff_cohort1_model <- lm(percentage ~ sig_program*cohort,
 summary(diff_in_diff_cohort1_model)
 
 ```
+
+COHORT 2010-11 AND 2011-12
+```{r include=TRUE}
+
+cohort2 <- filter(diff_in_diff_both, cohort %in% c("scores_1011","scores_1112"))
+cohort2$cohort <- if_else(cohort2$cohort == "scores_1011", "0","1")
+
+cohort2$sig_program <- as.factor(cohort2$sig_program)
+cohort2$cohort <- as.factor(cohort2$cohort)
+
+diff_in_diff_cohort2_model <- lm(percentage ~ sig_program*cohort, 
+                         data = cohort2)
+
+summary(diff_in_diff_cohort2_model)
+
+```
+
+COHORT 2011-12 AND 2012-13
+
 ```{r include=TRUE}
 
 cohort3 <- filter(diff_in_diff_both, cohort %in% c("scores_1112","scores_1213"))
@@ -319,6 +346,8 @@ diff_in_diff_cohort3_model <- lm(percentage ~ sig_program*cohort,
 summary(diff_in_diff_cohort3_model)
 
 ```
+
+COHORT 2012-13 AND 2013-14
 ```{r include=TRUE}
 
 cohort4 <- filter(diff_in_diff_both, cohort %in% c("scores_1213","scores_1314"))
@@ -331,4 +360,9 @@ diff_in_diff_cohort4_model <- lm(percentage ~ sig_program*cohort,
                          data = cohort4)
 
 summary(diff_in_diff_cohort4_model)
+```
+
+\pagebreak
+# Appendix A
+```{r include=TRUE, ref.label=knitr::all_labels(), echo = T, eval = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), results='asis'}
 ```
