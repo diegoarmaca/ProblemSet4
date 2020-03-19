@@ -18,48 +18,32 @@ library(ggplot2)
 library(reshape2)
 library(stringr)
 #library(groom)
-
-setwd("~/Experimental Design for Data Science/ProblemSet4")
-
+#setwd("~/Experimental Design for Data Science/ProblemSet4")
 ```
 
 ```{r}
 ###Upload datasets
-
-
-#https://www2.ed.gov/programs/sif/data/sy1011-1314.xlsx
+#online versions
+#url_treated <- "https://www2.ed.gov/programs/sif/data/sy1011-1314.xlsx"
+#treated_schools <- read_excel(url_treated)
 treated_schools <- read_excel("sy1011-1314.xlsx")
 treated_schools <- janitor::clean_names(treated_schools)
-
-
-#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2009-10.csv
+#math_assessment_09-10 <- read.csv("https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2009-10.csv")
 math_assessment_09_10 <- read.csv("math-achievement-sch-sy2009-10.csv")
 math_assessment_09_10 <- janitor::clean_names(math_assessment_09_10)
-
-#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2010-11.csv
+#math_assessment_13_14 <- read.csv("https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2013-14.csv")
 math_assessment_10_11 <- read.csv("math-achievement-sch-sy2010-11.csv")
 math_assessment_10_11 <- janitor::clean_names(math_assessment_10_11)
-
-#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2011-12.csv
 math_assessment_11_12 <- read.csv("math-achievement-sch-sy2011-12.csv")
 math_assessment_11_12 <- janitor::clean_names(math_assessment_11_12)
-
-#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2012-13.csv
 math_assessment_12_13 <- read.csv("math-achievement-sch-sy2012-13.csv")
 math_assessment_12_13 <- janitor::clean_names(math_assessment_12_13)
-
-#https://www2.ed.gov/about/inits/ed/edfacts/data-files/math-achievement-sch-sy2013-14.csv
 math_assessment_13_14 <- read.csv("math-achievement-sch-sy2013-14.csv")
 math_assessment_13_14 <- janitor::clean_names(math_assessment_13_14)
-
-
 head(treated_schools)
 ```
 
 ```{r}
-
-#
-
 treated_all_cohorts <- filter(treated_schools, 
                               sy201011sig_model != is.na(sy201011sig_model) &
                               sy201112sig_model != is.na(sy201112sig_model) &
@@ -78,100 +62,101 @@ treated_all_cohorts <- filter(treated_schools,
                               )
 treated_all_cohorts <- select(treated_all_cohorts, state, leaid_10_11, 
                            leanm_1011, ncessch_1011, schnam_1011)
-
 treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
-
-
 colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name","ncessch","school_name")
-
-
 head(treated_all_cohorts)
 ```
 ```{r}
 treated_math_09_10 <- select(math_assessment_09_10, stnam, leaid, 
                               leanm, ncessch, schnam09, all_mth00pctprof_0910)
-
 treated_math_10_11 <- select(math_assessment_10_11, stnam, leaid, 
                               leanm10, ncessch, schnam10, all_mth00pctprof_1011)
-
 treated_math_11_12 <- select(math_assessment_11_12, stnam, leaid, 
                               leanm, ncessch, schnam11, all_mth00pctprof_1112)
-
 treated_math_12_13 <- select(math_assessment_12_13, stnam, leaid, 
                               leanm, ncessch, schnam, all_mth00pctprof_1213)
-
 treated_math_13_14 <- select(math_assessment_13_14, stnam, leaid, 
                               leanm, ncessch, schnam, all_mth00pctprof_1314)
-
 merged_math <- merge(treated_math_09_10, treated_math_10_11, by= "ncessch")
 merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
                       leaid.x, leanm, all_mth00pctprof_0910, all_mth00pctprof_1011)
-
 merged_math <- merge(merged_math, treated_math_11_12, by= "ncessch")
 merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
                       leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
                       all_mth00pctprof_1112)
-
 merged_math <- merge(merged_math, treated_math_12_13, by= "ncessch")
 merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
                       leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
                       all_mth00pctprof_1112, all_mth00pctprof_1213)
-
 merged_math <- merge(merged_math, treated_math_13_14, by= "ncessch")
 merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
                       leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
                       all_mth00pctprof_1112, all_mth00pctprof_1213, all_mth00pctprof_1314)
-
-
-
 merged_math
 ```
 ```{r}
 ### Create Treatment DataSet ###
-
 results_treated <- merge(treated_all_cohorts, merged_math, by= "ncessch")
-
 results_treated <- filter(results_treated,
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_0910) )
-
 results_treated <- filter(results_treated, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1011) )
-
 results_treated <- filter(results_treated, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1112) )
-
 results_treated <- filter(results_treated, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1213) )
-
 results_treated <- filter(results_treated, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1314) )
-
 results_treated <- select(results_treated, ncessch, schnam09, stnam.x, 
                           leaid.x, leanm.x, all_mth00pctprof_0910, 
                           all_mth00pctprof_1011, all_mth00pctprof_1112,
                           all_mth00pctprof_1213, all_mth00pctprof_1314)
-
 colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "scores_0910", "scores_1011",
                                "scores_1112", "scores_1213", "scores_1314")
-
 results_treated
-
 ```
-# TREATED GROUP BY COHORTS  
+```{r}
+# Historgram of percentages of all cohorts
+library(tidyr)
+library(ggplot2)
+plot <- select(results_treated, "scores_0910","scores_1011","scores_1112",
+                                           "scores_1213","scores_1314")
+plot <- as.data.frame(plot)
+plot[,1:5] <- sapply(plot[,1:5], function(x) as.character(x))
+plot[,1:5] <- sapply(plot[,1:5], function(x) as.numeric(x))
+plot <- as.data.frame(plot)
+
+plot <- plot %>%
+  gather(key="text", value="value") %>%
+  mutate(text = gsub("\\.", " ",text)) %>%
+  mutate(value = round(as.numeric(value),0))
+
+plot %>%
+  ggplot( aes(x=value, color=text, fill=text)) +
+    geom_histogram(alpha=0.6, binwidth = 5) +
+    scale_fill_viridis(discrete=TRUE) +
+    scale_color_viridis(discrete=TRUE) +
+    theme(
+      legend.position="none",
+      panel.spacing = unit(0.1, "lines"),
+      strip.text.x = element_text(size = 8)
+    ) +
+    xlab("Percentage") +
+    ylab("Counts") +
+    facet_wrap(~text)
+```
 ```{r include=TRUE}
 diff_in_diff_treated <- melt(results_treated, measure = 6:10)
 diff_in_diff_treated[,7] <- 
 sapply(diff_in_diff_treated[,7], function(x) as.numeric(x))
-
 colnames(diff_in_diff_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
-
 diff_in_diff_treated %>% 
   ggplot(aes(x = cohort,
              y = percentage
@@ -184,49 +169,36 @@ diff_in_diff_treated %>%
        y = "Percentage",
        color = "Groups") +
   scale_color_brewer(palette = "Set1")
-
 ggplot(results_treated, aes(x=state)) +
-  geom_bar()
-
+  geom_bar()+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
 
-# CONTROL GROUP BY COHORTS (Created randomly, keeping treated group distribution) 
+
 ```{r include=TRUE}
 ### Create Control Group ###
-
 merged_math_cleaned <- merged_math
-
 unique_treated_schools <- melt(treated_schools, measure = 10:13)
-
 unique_treated_schools <- unique(unique_treated_schools$value)
-
 merged_math_cleaned <- filter(merged_math, !(ncessch %in% 
                                 as.numeric(unique_treated_schools)))
-
-
 merged_math_cleaned <- filter(merged_math_cleaned,
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_0910) )
-
 merged_math_cleaned <- filter(merged_math_cleaned, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1011) )
-
 merged_math_cleaned <- filter(merged_math_cleaned, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1112) )
-
 merged_math_cleaned <- filter(merged_math_cleaned, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1213) )
-
 merged_math_cleaned <- filter(merged_math_cleaned, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1314) )
-
 results_control <- data.frame()
-
 for (i in unique(results_treated$state)) {
     
     count_state <- count(filter(results_treated, state == i))
@@ -240,19 +212,14 @@ for (i in unique(results_treated$state)) {
     results_control <- rbind(results_control, sample_by_state)
     
     }
-
 colnames(results_control) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "scores_0910", "scores_1011",
                                "scores_1112", "scores_1213", "scores_1314")
-
-
 diff_in_diff_controled <- melt(results_control, measure = 6:10)
 diff_in_diff_controled[,7] <- 
 sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
-
 colnames(diff_in_diff_controled) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
-
 diff_in_diff_controled %>% 
   ggplot(aes(x = cohort,
              y = percentage
@@ -265,22 +232,15 @@ diff_in_diff_controled %>%
        y = "Percentage",
        color = "Groups") +
   scale_color_brewer(palette = "Set1")
-
-ggplot(results_control, aes(x=state)) +
-  geom_bar()
-
+  ggplot(results_control, aes(x=state)) +
+  geom_bar()+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
-
-# GRAPH OF TREATED AND CONTROLLED GROUPS BY COHORTS 
-
 ```{r include=TRUE}
 ### Create diff in diff dataset with both treated and controlled groups ###
-
 diff_in_diff_treated <- mutate(diff_in_diff_treated, sig_program = "1")
 diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
-
 diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
-
 diff_in_diff_both %>% 
   ggplot(aes(x = cohort,
              y = percentage,
@@ -293,76 +253,33 @@ diff_in_diff_both %>%
        y = "Percentage",
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
-
-
 ```
-# APPLYING DIFF IN DIFF TO BY COHORTS 
 
-COHORT 2009-10 AND 2010-11
 ```{r include=TRUE}
-
 cohort1 <- filter(diff_in_diff_both, cohort %in% c("scores_0910","scores_1011"))
 cohort1$cohort <- if_else(cohort1$cohort == "scores_0910", "0","1")
-
 cohort1$sig_program <- as.factor(cohort1$sig_program)
 cohort1$cohort <- as.factor(cohort1$cohort)
-
 diff_in_diff_cohort1_model <- lm(percentage ~ sig_program*cohort, 
                          data = cohort1)
-
 summary(diff_in_diff_cohort1_model)
-
 ```
-
-COHORT 2010-11 AND 2011-12
 ```{r include=TRUE}
-
-cohort2 <- filter(diff_in_diff_both, cohort %in% c("scores_1011","scores_1112"))
-cohort2$cohort <- if_else(cohort2$cohort == "scores_1011", "0","1")
-
-cohort2$sig_program <- as.factor(cohort2$sig_program)
-cohort2$cohort <- as.factor(cohort2$cohort)
-
-diff_in_diff_cohort2_model <- lm(percentage ~ sig_program*cohort, 
-                         data = cohort2)
-
-summary(diff_in_diff_cohort2_model)
-
-```
-
-COHORT 2011-12 AND 2012-13
-
-```{r include=TRUE}
-
 cohort3 <- filter(diff_in_diff_both, cohort %in% c("scores_1112","scores_1213"))
 cohort3$cohort <- if_else(cohort3$cohort == "scores_1112", "0","1")
-
 cohort3$sig_program <- as.factor(cohort3$sig_program)
 cohort3$cohort <- as.factor(cohort3$cohort)
-
 diff_in_diff_cohort3_model <- lm(percentage ~ sig_program*cohort, 
                          data = cohort3)
-
 summary(diff_in_diff_cohort3_model)
-
 ```
-
-COHORT 2012-13 AND 2013-14
 ```{r include=TRUE}
-
 cohort4 <- filter(diff_in_diff_both, cohort %in% c("scores_1213","scores_1314"))
 cohort4$cohort <- if_else(cohort4$cohort == "scores_1213", "0","1")
-
 cohort4$sig_program <- as.factor(cohort4$sig_program)
 cohort4$cohort <- as.factor(cohort4$cohort)
-
 diff_in_diff_cohort4_model <- lm(percentage ~ sig_program*cohort, 
                          data = cohort4)
-
 summary(diff_in_diff_cohort4_model)
 ```
 
-\pagebreak
-# Appendix A
-```{r include=TRUE, ref.label=knitr::all_labels(), echo = T, eval = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), results='asis'}
-```
