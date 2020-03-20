@@ -54,17 +54,19 @@ treated_all_cohorts <- filter(treated_schools,
                               ncessch_1011 == ncessch_1314 &
                               ncessch_1112 == ncessch_1213 &
                               ncessch_1112 == ncessch_1314 &
-                              ncessch_1213 == ncessch_1314 &
-                              sy201011sig_model == "Turnaround" &
-                              sy201112sig_model == "Turnaround" &
-                              sy201213sig_model == "Turnaround" &
-                              sy201314sig_model == "Turnaround"
+                              ncessch_1213 == ncessch_1314 
+                              #sy201011sig_model == "Transformation" &
+                              #sy201112sig_model == "Transformation" &
+                              #sy201213sig_model == "Transformation" &
+                              #sy201314sig_model == "Transformation"
                               )
 treated_all_cohorts <- select(treated_all_cohorts, state, leaid_10_11, 
-                           leanm_1011, ncessch_1011, schnam_1011)
+                           leanm_1011, ncessch_1011, schnam_1011,
+                           sy201011sig_model, sy201112sig_model,
+                           sy201213sig_model, sy201314sig_model)
 treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
-colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name","ncessch","school_name")
-head(treated_all_cohorts)
+colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name", "ncessch","school_name","model_2010_11", "model_2011_12","model_2012_13","model_2013_14")
+treated_all_cohorts
 ```
 ```{r}
 treated_math_09_10 <- select(math_assessment_09_10, stnam, leaid, 
@@ -140,8 +142,6 @@ plot <- plot %>%
 plot %>%
   ggplot( aes(x=value, color=text, fill=text)) +
     geom_histogram(alpha=0.6, binwidth = 5) +
-    scale_fill_viridis(discrete=TRUE) +
-    scale_color_viridis(discrete=TRUE) +
     theme(
       legend.position="none",
       panel.spacing = unit(0.1, "lines"),
@@ -157,21 +157,6 @@ diff_in_diff_treated[,7] <-
 sapply(diff_in_diff_treated[,7], function(x) as.numeric(x))
 colnames(diff_in_diff_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
-diff_in_diff_treated %>% 
-  ggplot(aes(x = cohort,
-             y = percentage
-             #color = state
-             )) +
-  geom_point() +
-  geom_line(aes(group = ncessch), alpha = 0.2) +
-  theme_minimal() +
-  labs(x = "Periods",
-       y = "Percentage",
-       color = "Groups") +
-  scale_color_brewer(palette = "Set1")
-ggplot(results_treated, aes(x=state)) +
-  geom_bar()+
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 
 
@@ -220,6 +205,58 @@ diff_in_diff_controled[,7] <-
 sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
 colnames(diff_in_diff_controled) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
+```
+```{r include=TRUE}
+### Create diff in diff dataset with both treated and controlled groups ###
+diff_in_diff_treated <- mutate(diff_in_diff_treated, sig_program = "1")
+diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
+diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
+```
+
+```{r}
+diff_in_diff_treated %>%
+  group_by(cohort) %>%
+  summarize(mean = mean(percentage, na.rm = TRUE), 
+            median = median(percentage, na.rm = TRUE),
+            max = max(percentage, na.rm = TRUE), 
+            min = min(percentage, na.rm = TRUE),
+            sd = sd(percentage, na.rm = TRUE)
+            )
+
+boxplot(percentage ~ cohort, data = diff_in_diff_treated,
+        xlab = "School Year", las = 2, 
+        ylab = "Proficiency Rate", main = "Treatment Group Boxplot")
+
+diff_in_diff_controled %>%
+  group_by(cohort) %>%
+  summarize(mean = mean(percentage, na.rm = TRUE), 
+            median = median(percentage, na.rm = TRUE),
+            max = max(percentage, na.rm = TRUE), 
+            min = min(percentage, na.rm = TRUE),
+            sd = sd(percentage, na.rm = TRUE))
+
+boxplot(percentage ~ cohort, data = diff_in_diff_controled,
+        xlab = "School Year", las = 2, 
+        ylab = "Proficiency Rate", main = "Control Group Boxplot")
+```
+```{r}
+diff_in_diff_treated %>% 
+  ggplot(aes(x = cohort,
+             y = percentage
+             #color = state
+             )) +
+  geom_point() +
+  geom_line(aes(group = ncessch), alpha = 0.2) +
+  theme_minimal() +
+  labs(x = "Periods",
+       y = "Percentage",
+       color = "Groups") +
+  scale_color_brewer(palette = "Set1")
+ggplot(results_treated, aes(x=state)) +
+  geom_bar()+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+```{r}
 diff_in_diff_controled %>% 
   ggplot(aes(x = cohort,
              y = percentage
@@ -236,11 +273,7 @@ diff_in_diff_controled %>%
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
-```{r include=TRUE}
-### Create diff in diff dataset with both treated and controlled groups ###
-diff_in_diff_treated <- mutate(diff_in_diff_treated, sig_program = "1")
-diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
-diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
+```{r}
 diff_in_diff_both %>% 
   ggplot(aes(x = cohort,
              y = percentage,
@@ -254,7 +287,6 @@ diff_in_diff_both %>%
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
 ```
-
 ```{r include=TRUE}
 cohort1 <- filter(diff_in_diff_both, cohort %in% c("scores_0910","scores_1011"))
 cohort1$cohort <- if_else(cohort1$cohort == "scores_0910", "0","1")
@@ -282,4 +314,3 @@ diff_in_diff_cohort4_model <- lm(percentage ~ sig_program*cohort,
                          data = cohort4)
 summary(diff_in_diff_cohort4_model)
 ```
-
