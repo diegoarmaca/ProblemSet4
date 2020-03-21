@@ -1,15 +1,16 @@
 ---
 title: "Education in USA"
-author: "Ke-li Chiu, Sharon Allman & Diego Mamanche Castellanos"
+author: "Sharon Allman, Diego Mamanche Castellano & Ke-Li Chiu"
 date: "11/03/2020"
 output: pdf_document
+abstract: "The objective of this analysis was to examine if there was a relationship between a school’s participation in a School Improvement Grant program and an increase in that school’s students’ achievement.  Using linear regression models, we failed to reject the null hypothesis that the SIG programs had no statistically significant effect on students’ performance over time."
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, include = FALSE)## R Markdown
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE, message=FALSE}
 #Set up the environment
 library(readxl)
 library(dplyr)
@@ -17,11 +18,15 @@ library(tidyr)
 library(ggplot2)
 library(reshape2)
 library(stringr)
-#library(groom)
+library(knitr)
+library(tidyverse)
+library(broom)
+library(huxtable)
+library(jtools)
 #setwd("~/Experimental Design for Data Science/ProblemSet4")
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE, message=FALSE}
 ###Upload datasets
 #online versions
 #url_treated <- "https://www2.ed.gov/programs/sif/data/sy1011-1314.xlsx"
@@ -43,7 +48,7 @@ math_assessment_13_14 <- janitor::clean_names(math_assessment_13_14)
 head(treated_schools)
 ```
 
-```{r}
+```{r echo=FALSE, include=FALSE, message=FALSE}
 treated_all_cohorts <- filter(treated_schools, 
                               sy201011sig_model != is.na(sy201011sig_model) &
                               sy201112sig_model != is.na(sy201112sig_model) &
@@ -68,7 +73,7 @@ treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
 colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name", "ncessch","school_name","model_2010_11", "model_2011_12","model_2012_13","model_2013_14")
 treated_all_cohorts
 ```
-```{r}
+```{r echo=FALSE, include=FALSE, message=FALSE}
 treated_math_09_10 <- select(math_assessment_09_10, stnam, leaid, 
                               leanm, ncessch, schnam09, all_mth00pctprof_0910)
 treated_math_10_11 <- select(math_assessment_10_11, stnam, leaid, 
@@ -96,7 +101,7 @@ merged_math <- select(merged_math, ncessch, schnam09, stnam.x,
                       all_mth00pctprof_1112, all_mth00pctprof_1213, all_mth00pctprof_1314)
 merged_math
 ```
-```{r}
+```{r echo=FALSE, include=FALSE, message=FALSE}
 ### Create Treatment DataSet ###
 results_treated <- merge(treated_all_cohorts, merged_math, by= "ncessch")
 results_treated <- filter(results_treated,
@@ -123,7 +128,27 @@ colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "scores_1112", "scores_1213", "scores_1314")
 results_treated
 ```
-```{r}
+# Introduction
+
+In 2009, the US Government allocated $3 billion under the American Recovery and Reinvestment Act of 2009 into School Improvement Grants (SIG) to turn around the lowest performing schools. As one of the Obama administration’s signature programs, SIG is also one of the largest investments in education grants made by the US government. Does SIG drive changes in outcome of schools’ performance and students’ achievement? That is the 3-billion-dollar question.   
+
+The SIG awarded persistently low-performing schools sizeable funding to bring about radical school changes by implementing their intervention models that have specific practices such as increased learning time, integration of technology in classrooms, and the replacement of administration management. In this study, we observe the schools that have implements the models in all four years to evaluate the impact of the SIG program by observing the change of percentage of students meeting proficiency level in math assessment. As a result, despite of the substantial amount of the investment, we found no significance effect of the program on the students’ outcome. 
+
+# Dataset Description and Data Cleaning 
+
+The data set sy1011-1314 includes data for four school years from 2010-11 to 2013-14. The data contains the list of schools who got the SIG funding to implement SIG programs in each year. Year 2010-11 is implementation year 1, 2011-12 is implementation year 2, 2012-13 is implementation year 3, and 2013-14 is implementation year 4. We keep only the rows of schools who have implemented SIG models in all four implementation years.  
+
+To assess the effect of the “Turnaround” model, we want to observe the change of percentages of students in the schools that scored above proficiency in math assessment before and at an implementation year. Therefore, we gather math achievement data sets from school year 2009-10 to 2013-14 and extract the column of proficiency rate from each data set. The proficiency rate is ranged from 0 to 100. Moreover, the data sets contain schools that did not implement “Turnaround” model in any of the implementation year, which allows us to formulate a control group with random assignment method. In the end, we have a data frame observe 183 schools across five school years with 8 variables concerning the schools’ name, region, model implemented, proficiency rate and school year.  
+
+# Method 
+
+The method we used to estimate the effects of SIG program is difference-in-differences (diff-in-diff). The initial difference between the treatment and control group is taken into account. Because the SIG program only awarded the schools that ranked as low performing, the average proficiency rate in the treatment group is substantially lower than the ones in the control group—we will not compare the differences of proficiency rate between treatment and control group. What we want to compare are the changes in the treatment group over time to changes in the control group over time. 
+
+# Summary Statistics
+
+The distribution of percentage rate in the treated group across five school years is shown in Figure x. We can see that most of the schools in the treated group have proficiency rate under 50%, meaning a large portion of the students among these schools don’t meet the proficient level in math assessment.  
+
+```{r echo=FALSE, message=FALSE}
 # Historgram of percentages of all cohorts
 library(tidyr)
 library(ggplot2)
@@ -151,17 +176,16 @@ plot %>%
     ylab("Counts") +
     facet_wrap(~text)
 ```
-```{r include=TRUE}
+Figure x. Distribution of percentage rate in the treated group across five school years 
+
+```{r echo=FALSE, include=FALSE, message=FALSE}
 diff_in_diff_treated <- melt(results_treated, measure = 6:10)
 diff_in_diff_treated[,7] <- 
 sapply(diff_in_diff_treated[,7], function(x) as.numeric(x))
 colnames(diff_in_diff_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
 ```
-
-
-
-```{r include=TRUE}
+```{r echo=FALSE, include=FALSE, message=FALSE}
 ### Create Control Group ###
 merged_math_cleaned <- merged_math
 unique_treated_schools <- melt(treated_schools, measure = 10:13)
@@ -206,74 +230,97 @@ sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
 colnames(diff_in_diff_controled) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
 ```
-```{r include=TRUE}
+```{r echo=FALSE, include=FALSE, message=FALSE}
 ### Create diff in diff dataset with both treated and controlled groups ###
 diff_in_diff_treated <- mutate(diff_in_diff_treated, sig_program = "1")
 diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
 diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
 ```
 
-```{r}
-diff_in_diff_treated %>%
-  group_by(cohort) %>%
-  summarize(mean = mean(percentage, na.rm = TRUE), 
-            median = median(percentage, na.rm = TRUE),
-            max = max(percentage, na.rm = TRUE), 
-            min = min(percentage, na.rm = TRUE),
-            sd = sd(percentage, na.rm = TRUE)
-            )
+A boxplot that showcase the distribution of the treatment group is shown in Figure x. In the treatment group, the mean of the proficiency rate across five school years remain under 40%. The maximum proficiency rate is 88% in the school year 2012-2013. The least proficient rate is 3% also lies in school year 2012-2013. 
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
+# diff_in_diff_treated %>% group_by(cohort) %>% summarize(mean = mean(percentage, na.rm = TRUE), 
+            # median = median(percentage, na.rm = TRUE), min = min(percentage, na.rm = TRUE),
+            # sd = sd(percentage, na.rm = TRUE))
 
 boxplot(percentage ~ cohort, data = diff_in_diff_treated,
         xlab = "School Year", las = 2, 
         ylab = "Proficiency Rate", main = "Treatment Group Boxplot")
+```
+Figure x. Treatment group summary statistics
 
-diff_in_diff_controled %>%
-  group_by(cohort) %>%
-  summarize(mean = mean(percentage, na.rm = TRUE), 
-            median = median(percentage, na.rm = TRUE),
-            max = max(percentage, na.rm = TRUE), 
-            min = min(percentage, na.rm = TRUE),
-            sd = sd(percentage, na.rm = TRUE))
+A boxplot that showcase the distribution of the control group is shown in Figure x. In the control group, the mean of the proficiency rate across five school years are above 60%. The maximum proficiency rate is 96% in the school year 2011-2012. The least proficient rate is 15% in school year 2012-2013. 
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
+# diff_in_diff_controled %>% group_by(cohort) %>% summarize(mean = mean(percentage, na.rm = TRUE), 
+            # median = median(percentage, na.rm = TRUE),max = max(percentage, na.rm = TRUE), min = min(percentage, na.rm = TRUE),
+            # sd = sd(percentage, na.rm = TRUE))
 
 boxplot(percentage ~ cohort, data = diff_in_diff_controled,
         xlab = "School Year", las = 2, 
         ylab = "Proficiency Rate", main = "Control Group Boxplot")
 ```
-```{r}
-diff_in_diff_treated %>% 
-  ggplot(aes(x = cohort,
-             y = percentage
-             #color = state
-             )) +
-  geom_point() +
-  geom_line(aes(group = ncessch), alpha = 0.2) +
-  theme_minimal() +
-  labs(x = "Periods",
-       y = "Percentage",
-       color = "Groups") +
-  scale_color_brewer(palette = "Set1")
+Figure x. Control group summary statistics 
+
+# Research Question
+
+Within this research, we aimed to examine the impact of SIG programs over time.  
+
+H0: The SIG programs have no effect on students’ performance over time. 
+
+H1: The SIG programs have an effect on students’ performance over time. 
+
+H2: The SIG programs have a positive effect on students’ performance over time. 
+
+ 
+
+# Ethical Issues
+
+This data is sourced from the United States Department of Education and is publicly available, so this data has been largely anonymized. This data does not contain specific demographic information that could directly identify any of the participants.  However, it does contain very specific information about the schools involved, especially the names of the schools and the states they are located in.  This may be problematic as this could be theoretically used to de-anonymize data specific to individuals if combined with other demographic data (about students/participants in relation to these states or the names of these schools).  It is unlikely that individual respondents would be able to request to have data related to them removed from this data, as this is data collected by the government and does not have personally identifying information.  Additionally, clearly identifying the worst-performing schools could be further stigmatizing to the institutions and individuals associated with them.   
+
+There is reason to believe that this data would be representative of the program as a whole, as this data is cumulative of all of the cases of this program within the specific time frames. Research done using this data may have higher external validity, as this data is representative of the whole population impacted by the program. However, it may be ethically ambiguous for the government to be publishing positive findings about their program (The U.S. Department of Education, 2013), when independent research sources (including us) were unable to demonstrate that this program had a significant impact (Le Floch, 2018).   
+
+The United States Department of Education has broad ethical guidelines in terms of collection, dissemination, and analysis of data.  However, ethical considerations specific to this program are not outlined in the data documentation or summary of findings.  A multidisciplinary team was assembled in order to conceptualize and implement these programs (Kutash et al., 2010), however, it is unclear if this is also the case when it comes to the data collection and analysis.  This means that there may be some selection bias when it comes to the types of variables measured and reported on by the researchers.  This could have been mitigated by ensuring they reported a transparent process of how the data was collected and analyzed, including the documentation and human resources used to reduce sampling bias.   
+
+# Weaknesses & Limitations
+
+As previously mentioned, research done using this data could theoretically have higher external validity, as this data is directly representative of the population impacted by the program. As this was a government-run program, analyzed by the government itself, the sampling is able to include the entire population as a sample, ensuring that the sample will be fully representative. 
+
+Another consideration is that this data spans from 2009 to 2014.  While it may be representative of that specific timeframe, it would not be representative of school settings today.   
+
+Those organizing and analyzing this data have done so in a particular way, which may have included some sampling bias.   
+
+# Analysis
+
+## Construction of Treatment Group and Control Group 
+
+To assure the comparability of the treatment group and the control group, we make sure that the two groups have the composition in the distribution of schools across states. The distribution of schools across states in treatment group is shown in Figure x, and the control group distribution is shown in Figure x. 
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
+#diff_in_diff_treated %>% ggplot(aes(x = cohort,y = percentage))+geom_point() +geom_line(aes(group = ncessch), alpha = 0.2) +
+  #theme_minimal() +labs(x = "Periods",y = "Percentage",color = "Groups") +
+  #scale_color_brewer(palette = "Set1")
+
 ggplot(results_treated, aes(x=state)) +
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
-```{r}
-diff_in_diff_controled %>% 
-  ggplot(aes(x = cohort,
-             y = percentage
-             #color = state
-             )) +
-  geom_point() +
-  geom_line(aes(group = ncessch), alpha = 0.2) +
-  theme_minimal() +
-  labs(x = "Periods",
-       y = "Percentage",
-       color = "Groups") +
-  scale_color_brewer(palette = "Set1")
-  ggplot(results_control, aes(x=state)) +
+Figure x. Distribution of schools who implemented SIG models across states 
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
+#diff_in_diff_controled %>% ggplot(aes(x = cohort, y = percentage)) + geom_point() + geom_line(aes(group = ncessch), alpha = 0.2) +
+  #theme_minimal() + labs(x = "Periods", y = "Percentage", color = "Groups") +
+  #scale_color_brewer(palette = "Set1")
+  
+ggplot(results_control, aes(x=state)) +
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
-```{r}
+Figure x. Distribution of schools who did not implemented SIG models across states 
+
+We plot the proficiency rate of each school in both treatment and control groups. As shown in Figure x, there is no clear trend in either group. 
+```{r echo=FALSE, include=TRUE, message=FALSE}
 diff_in_diff_both %>% 
   ggplot(aes(x = cohort,
              y = percentage,
@@ -287,30 +334,73 @@ diff_in_diff_both %>%
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
 ```
-```{r include=TRUE}
+Figure x. Proficiency rate of each school in both treatment and control groups 
+
+## Linear Regression  
+
+Linear regression is applied to evaluate the effect of SIG program on proficiency rate across four school years. The equation used in the models is: 
+
+Yi,t = β0 + β1Treatment group dummyi + β2Time dummyt +  
+β3(Treatment group dummy × Time dummy)i,t + ϵi,t 
+
+β3 is how much the treatment group changes after the treatment event compared to how much the control group changes after the treatment event, which is the term we care about.  
+
+### Model 1 
+
+Model 1 observes the change between school year 2009-10 and 2010-2011. As the result shown in Figure x, the p-value of β3 is 0.37, the effect of SIG program on math proficiency rate is insignificant.  
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
 cohort1 <- filter(diff_in_diff_both, cohort %in% c("scores_0910","scores_1011"))
-cohort1$cohort <- if_else(cohort1$cohort == "scores_0910", "0","1")
+cohort1$cohort <- if_else(cohort1$cohort == "scores_0910", "before","after")
 cohort1$sig_program <- as.factor(cohort1$sig_program)
 cohort1$cohort <- as.factor(cohort1$cohort)
 diff_in_diff_cohort1_model <- lm(percentage ~ sig_program*cohort, 
                          data = cohort1)
-summary(diff_in_diff_cohort1_model)
+# result <- summary(diff_in_diff_cohort1_model)
+# summary(diff_in_diff_cohort1_model)
+summ(diff_in_diff_cohort1_model, model.info = FALSE, model.fit = FALSE)
 ```
-```{r include=TRUE}
+Table x. Model 1
+
+### Model 2 
+
+Model 2 observes the change between school year 2010-11 and 2011-2012. As the result shown in Figure x, the p-value of β3 is 0.70, the effect of SIG program on math proficiency rate is insignificant. 
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
+cohort2 <- filter(diff_in_diff_both, cohort %in% c("scores_1011","scores_1112"))
+cohort2$cohort <- if_else(cohort2$cohort == "scores_1011", "before","after")
+cohort2$sig_program <- as.factor(cohort2$sig_program)
+cohort2$cohort <- as.factor(cohort2$cohort)
+diff_in_diff_cohort2_model <- lm(percentage ~ sig_program*cohort, 
+                         data = cohort2)
+summ(diff_in_diff_cohort2_model, model.info = FALSE, model.fit = FALSE)
+```
+Table x. Model 2
+
+### Model 3 
+
+Model 3 observes the change between school year 2011-12 and 2012-2013. As the result shown in Figure x, the p-value of β3 is 0.37, the effect of SIG program on math proficiency rate is insignificant. 
+```{r echo=FALSE, include=TRUE, message=FALSE}
 cohort3 <- filter(diff_in_diff_both, cohort %in% c("scores_1112","scores_1213"))
-cohort3$cohort <- if_else(cohort3$cohort == "scores_1112", "0","1")
+cohort3$cohort <- if_else(cohort3$cohort == "scores_1112", "before","after")
 cohort3$sig_program <- as.factor(cohort3$sig_program)
 cohort3$cohort <- as.factor(cohort3$cohort)
 diff_in_diff_cohort3_model <- lm(percentage ~ sig_program*cohort, 
                          data = cohort3)
-summary(diff_in_diff_cohort3_model)
+summ(diff_in_diff_cohort3_model, model.info = FALSE, model.fit = FALSE)
 ```
-```{r include=TRUE}
+Table x. Model 3
+
+### Model 4 
+
+Model 4 observes the change between school year 2012-13 and 2013-2014. As the result shown in Figure x, the p-value of β3 is 0.37, the effect of SIG program on math proficiency rate is insignificant. 
+```{r echo=FALSE, include=TRUE, message=FALSE}
 cohort4 <- filter(diff_in_diff_both, cohort %in% c("scores_1213","scores_1314"))
-cohort4$cohort <- if_else(cohort4$cohort == "scores_1213", "0","1")
+cohort4$cohort <- if_else(cohort4$cohort == "scores_1213", "before","after")
 cohort4$sig_program <- as.factor(cohort4$sig_program)
 cohort4$cohort <- as.factor(cohort4$cohort)
 diff_in_diff_cohort4_model <- lm(percentage ~ sig_program*cohort, 
                          data = cohort4)
-summary(diff_in_diff_cohort4_model)
+summ(diff_in_diff_cohort4_model, model.info = FALSE, model.fit = FALSE)
 ```
+Table x. Model 4
