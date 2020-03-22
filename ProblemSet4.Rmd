@@ -56,7 +56,8 @@ treated_all_cohorts <- select(treated_all_cohorts, state, leaid_10_11,
                            sy201213sig_model, sy201314sig_model)
 treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
 colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name", 
-                                   "ncessch","school_name","model_2010_11", "model_2011_12","model_2012_13","model_2013_14")
+                                   "ncessch","school_name","model_2010_11", 
+                                   "model_2011_12","model_2012_13","model_2013_14")
 treated_all_cohorts
 ```
 ```{r echo=FALSE, include=FALSE, message=FALSE}
@@ -181,18 +182,18 @@ diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
 
 The distribution of the treatment group before and after the program implementation is shown in Figure 2. The mean of the proficiency rate in both school years remained under 40%. The maximum proficiency rate was 93% in the school year 2009-2010. The lowest proficiency rate was 2% in school year 2013-2014.   
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig2, fig.height = 2, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig2, fig.height = 5, fig.width = 7}
 boxplot(percentage ~ cohort, data = diff_in_diff_treated,
-        xlab = "School Year", las = 2, 
+        xlab = "School Year", 
         ylab = "Proficiency Rate", main = "Treatment Group Boxplot")
 ```
 Figure 2. Treatment group summary statistics 
 
 The distribution of the control group is shown in Figure 3. In the control group, the mean of the proficiency rate across the five school years was above 60%. The maximum proficiency rate was 98% in both school years 2009-2010 and 2013-2014. The lowest proficiency rate was 5% in the school year 2013-2014.  
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig3, fig.height = 2, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig3, fig.height = 5, fig.width = 7}
 boxplot(percentage ~ cohort, data = diff_in_diff_controled,
-        xlab = "School Year", las = 2, 
+        xlab = "School Year", 
         ylab = "Proficiency Rate", main = "Control Group Boxplot")
 ```
 Figure 3. Control group summary statistics  
@@ -225,14 +226,14 @@ As previously mentioned, research done using this data could theoretically have 
 
 To assure the comparability of the treatment group and the control group, we ensured that the two groups had the composition in the distribution of schools across states. The distribution of schools across states in treatment group is shown in Figure 4, and the control group distribution is shown in Figure 5. 
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig4, fig.height = 2, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig4, fig.height = 4, fig.width = 7}
 ggplot(results_treated, aes(x=state)) +
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
 Figure 4. Distribution of schools which implemented the SIG models across states 
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig5, fig.height = 2, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig5, fig.height = 4, fig.width = 7}
 ggplot(results_control, aes(x=state)) +
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
@@ -241,7 +242,7 @@ Figure 5. Distribution of schools which did not implement the SIG models across 
 
 We plotted the proficiency rate change between 2009-10 and 2013-14 of each school in both treatment and control groups. As shown in Figure 6, there is no clear trend in either group.  
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig6, fig.height = 3, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig6, fig.height = 4, fig.width = 7}
 diff_in_diff_both %>% 
   ggplot(aes(x = cohort,
              y = percentage,
@@ -287,7 +288,7 @@ Table 1. OLS for diff-in-diff between 2009-10 and 2013-2014
 \pagebreak
 # Appendix A
 
-```{r ref.label=knitr::all_labels(), echo = T, eval = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), results='asis'}
+``````{r include=TRUE, ref.label=knitr::all_labels(), echo = T, eval = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), results='asis'}
 ```
 
 \pagebreak
