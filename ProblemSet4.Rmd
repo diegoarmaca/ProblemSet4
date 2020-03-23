@@ -2,7 +2,9 @@
 title: "The 3-billion School Improvement Grants (SIG) program has no significant effects on student outcome "
 author: "Sharon Allman, Diego Mamanche Castellano & Ke-Li Chiu"
 date: "11/03/2020"
-output: pdf_document
+output:
+  pdf_document:
+    latex_engine: xelatex
 abstract: "The objective of this analysis was to examine if there was a relationship between a school’s participation in a School Improvement Grant program and an increase in that school’s students’ achievement.  Using linear regression models, we failed to reject the null hypothesis that the SIG programs had no statistically significant effect on students’ performance over time."
 ---
 
@@ -304,8 +306,10 @@ Figure 4. Proficiency rate of each school in both treatment and control groups
 
 Linear regression is applied to evaluate the effect of the SIG programs on proficiency rate across four school years. The equation used in the models is:  
 
-$$ Y_{i,t} = \beta0 + \beta1 \text{(Treatment group)}_{i} + \beta2 \text{(Year)}_{t} +  
-\beta3 \text{(Treatment group} × \text{Year})_{i,t} + \epsilon_{i,t}$$
+$$ 
+Y_{i,t} = \beta0 + \beta1 \text{(Treatment group)}_{i} + \beta2 \text{(Year)}_{t} +  
+\beta3 \text{(Treatment group} × \text{Year})_{i,t} + \epsilon_{i,t}
+$$
 
 $\beta3$ is how much the treatment group changes after the treatment event compared to how much the control group changes after the treatment event, which is the term we care about.  
   
