@@ -7,7 +7,7 @@ abstract: "The objective of this analysis was to examine if there was a relation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, include = FALSE)## R Markdown
+knitr::opts_chunk$set(echo = FALSE, include = FALSE, cache = TRUE)## R Markdown
 ```
 
 ```{r echo=FALSE, include=FALSE, message=FALSE}
@@ -136,7 +136,7 @@ The method we used to estimate the effects of the SIG programs was difference-in
 
 # Summary Statistics
 
-The distribution of the treatment group before and after the program implementation is shown in Figure 2. The mean of the proficiency rate in both school years remained under 40%. The maximum proficiency rate was 93% in the school year 2009-2010. The lowest proficiency rate was 2% in the school year 2013-2014. The distribution of the control group is shown in Figure 3. In the control group, the mean of the proficiency rate across the five school years was above 60%. The maximum proficiency rate was 98% in both school years 2009-2010 and 2013-2014. The lowest proficiency rate was 5% in the school year 2013-2014.  
+The distribution of the control group and treatment group before and after the program implementation is shown in Figure 1. The mean of the proficiency rate in both school years remained under 40%. The maximum proficiency rate was 93% in the school year 2009-2010. The lowest proficiency rate was 2% in the school year 2013-2014. In the control group, the mean of the proficiency rate across the five school years was above 60%. The maximum proficiency rate was 98% in both school years 2009-2010 and 2013-2014. The lowest proficiency rate was 5% in the school year 2013-2014.  
 
 ```{r include=TRUE, warning=FALSE}
 diff_in_diff_treated <- melt(results_treated, measure = 6:10)
@@ -191,7 +191,7 @@ sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
 colnames(diff_in_diff_controled) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
 ```
-```{r echo=FALSE, include=TRUE, message=FALSE, fig2, fig.height = 5, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig2, fig.height = 5, fig.width = 7}
 results_treated_0910_1314 <- results_treated %>% select(scores_0910,scores_1314)
 results_control_0910_1314 <- results_control %>% select(scores_0910,scores_1314)
 
@@ -237,7 +237,7 @@ As noted in a federal report by the U.S. Department of Education, they concluded
 
 ## Construction of Treatment Group and Control Group 
 
-To assure the comparability of the treatment group and the control group, we ensured that the two groups had the composition in the distribution of schools across states. The distribution of schools across states in treatment group is shown in Figure 4, and the control group distribution is shown in Figure 5.  
+To assure the comparability of the treatment group and the control group, we ensured that the two groups had the composition in the distribution of schools across states. The distribution of schools across states in treatment group is shown in Figure 2, and the control group distribution is shown in Figure 5.  
 
 ```{r echo=FALSE, include=FALSE, message=FALSE}
 ### Create diff in diff dataset with both treated and controlled groups ###
@@ -251,7 +251,7 @@ ggplot(results_treated, aes(x=state)) +
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
-Figure 4. Distribution of schools which implemented the SIG models across states 
+Figure 2. Distribution of schools which implemented the SIG models across states 
 
 According to the Parallel Trend Assumption, the difference between the 'treatment' and 'control' group is constant over time. To validate, we plot the data from 2009-10 (before the program implementation) to 2013-14 to observe the trends of the two groups. As shown in Figure 3, the two groups share a similar trend in the math proficiency rate.
 
@@ -280,7 +280,7 @@ ggplot() +
 ```
 Figure 3. Trends of control group and treatment group
 
-We plotted the proficiency rate change between 2009-10 and 2013-14 of each school in both treatment and control groups. As shown in Figure 6, there is no clear trend in either group. 
+We plotted the proficiency rate change between 2009-10 and 2013-14 of each school in both treatment and control groups. As shown in Figure 4, there is no clear trend in either group. 
 
 ```{r echo=FALSE, include=TRUE, message=FALSE, fig6, fig.height = 4, fig.width = 7}
 diff_in_diff_both_0910_1314 <- diff_in_diff_both %>%
@@ -298,7 +298,7 @@ diff_in_diff_both_0910_1314 %>%
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
 ```
-Figure 6. Proficiency rate of each school in both treatment and control groups 
+Figure 4. Proficiency rate of each school in both treatment and control groups 
 
 ## Linear Regression  
 
@@ -308,6 +308,7 @@ $$ Y_{i,t} = \beta0 + \beta1 \text{(Treatment group)}_{i} + \beta2 \text{(Year)}
 \beta3 \text{(Treatment group} × \text{Year})_{i,t} + \epsilon_{i,t}$$
 
 $\beta3$ is how much the treatment group changes after the treatment event compared to how much the control group changes after the treatment event, which is the term we care about.  
+  
 
 ### Model 1 
 
