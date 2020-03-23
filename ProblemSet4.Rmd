@@ -193,7 +193,7 @@ sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
 colnames(diff_in_diff_controled) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
 ```
-```{r echo=FALSE, include=TRUE, message=FALSE, warning=FALSE, fig2, fig.height = 5, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, warning=FALSE,fig.height = 4, fig.width = 7}
 results_treated_0910_1314 <- results_treated %>% select(scores_0910,scores_1314)
 results_control_0910_1314 <- results_control %>% select(scores_0910,scores_1314)
 
@@ -248,7 +248,7 @@ diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
 diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
 ```
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig4, fig.height = 4, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig4, fig.height = 3, fig.width = 7}
 ggplot(results_treated, aes(x=state)) +
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
@@ -257,7 +257,7 @@ Figure 2. Distribution of schools which implemented the SIG models across states
 
 According to the Parallel Trend Assumption, the difference between the 'treatment' and 'control' group is constant over time. To validate, we plot the data from 2009-10 (before the program implementation) to 2013-14 to observe the trends of the two groups. As shown in Figure 3, the two groups share a similar trend in the math proficiency rate.
 
-```{r}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig2, fig.height = 3, fig.width = 7}
 # Line chart to show the trends
 results_control[,6:10] <- sapply(results_control[,6:10], function(x) as.character(x))
 results_control[,6:10] <- sapply(results_control[,6:10], function(x) as.numeric(x))
@@ -274,17 +274,18 @@ treated_plot <- as.data.frame(treated_plot)
 treated_plot$x <- as.numeric(treated_plot$x)
 # Basic line plot with points
 
-ggplot() + 
+plot<-ggplot() + 
   geom_line(data=control_plot, aes(x=Group.1, y=x, group=1), color = "blue") +
   geom_line(data=treated_plot, aes(x=Group.1, y=x, group=1), color = "red") +
   xlab('Dates') +
   ylab('percent.change')
+print(plot)
 ```
 Figure 3. Trends of control group and treatment group
 
 We plotted the proficiency rate change between 2009-10 and 2013-14 of each school in both treatment and control groups. As shown in Figure 4, there is no clear trend in either group. 
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig6, fig.height = 4, fig.width = 7}
+```{r echo=FALSE, include=TRUE, message=FALSE, fig6, fig.height = 3, fig.width = 7}
 diff_in_diff_both_0910_1314 <- diff_in_diff_both %>%
   filter(cohort == "scores_0910" | cohort == "scores_1314" )
 diff_in_diff_both_0910_1314 %>% 
@@ -339,7 +340,7 @@ According to a 2018 report by FutureEd, one of the reasons why more recently pub
 
 To validate the model, we perform the diff-in-diff analysis with another comparison group to see if we would obtain similar estimates of the impact of the program. As shown in Table 2, the estimate of 2.97 is not too far away from 3.11 in Model 1. 
 
-```{r warning=FALSE}
+```{r echo=FALSE, include=TRUE, message=FALSE, warning=FALSE}
 # Construct a second control group 
 results_control2 <- data.frame()
 for (i in unique(results_treated$state)) {
@@ -386,7 +387,7 @@ Table 2. OLS for diff-in-diff between 2009-10 and 2013-2014 with another set of 
 
 Another validation method we used was to test the model on a fake treatment group that should not be affected by the program. As shown in Table 3, the estimate is now 0.01 and the p-value is insignificant. 
 
-```{r warning=FALSE}
+```{r echo=FALSE, include=TRUE, message=FALSE, warning=FALSE}
 # Construct a fake treatment group 
 results_treatment_fake <- data.frame()
 for (i in unique(results_treated$state)) {
