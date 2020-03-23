@@ -32,6 +32,12 @@ treated_schools <- read_excel("sy1011-1314.xlsx")
 treated_schools <- janitor::clean_names(treated_schools)
 math_assessment_09_10 <- read.csv("math-achievement-sch-sy2009-10.csv")
 math_assessment_09_10 <- janitor::clean_names(math_assessment_09_10)
+math_assessment_10_11 <- read.csv("math-achievement-sch-sy2010-11.csv")
+math_assessment_10_11 <- janitor::clean_names(math_assessment_10_11)
+math_assessment_11_12 <- read.csv("math-achievement-sch-sy2011-12.csv")
+math_assessment_11_12 <- janitor::clean_names(math_assessment_11_12)
+math_assessment_12_13 <- read.csv("math-achievement-sch-sy2012-13.csv")
+math_assessment_12_13 <- janitor::clean_names(math_assessment_12_13)
 math_assessment_13_14 <- read.csv("math-achievement-sch-sy2013-14.csv")
 math_assessment_13_14 <- janitor::clean_names(math_assessment_13_14)
 head(treated_schools)
@@ -43,8 +49,6 @@ treated_all_cohorts <- filter(treated_schools,
                               sy201112sig_model != is.na(sy201112sig_model) &
                               sy201213sig_model != is.na(sy201213sig_model) &
                               sy201314sig_model != is.na(sy201314sig_model) &
-                              ncessch_1011 == ncessch_1112 &
-                              ncessch_1011 == ncessch_1213 &
                               ncessch_1011 == ncessch_1314 &
                               ncessch_1112 == ncessch_1213 &
                               ncessch_1112 == ncessch_1314 &
@@ -52,38 +56,78 @@ treated_all_cohorts <- filter(treated_schools,
                               )
 treated_all_cohorts <- select(treated_all_cohorts, state, leaid_10_11, 
                            leanm_1011, ncessch_1011, schnam_1011,
-                           sy201011sig_model, sy201112sig_model,
-                           sy201213sig_model, sy201314sig_model)
+                           sy201112sig_model, sy201213sig_model, sy201314sig_model)
 treated_all_cohorts$ncessch_1011 <- as.numeric(treated_all_cohorts$ncessch_1011)
 colnames(treated_all_cohorts) <- c("state", "lea_id","lea_name", 
-                                   "ncessch","school_name","model_2010_11", 
+                                   "ncessch","school_name",
                                    "model_2011_12","model_2012_13","model_2013_14")
 treated_all_cohorts
 ```
 ```{r echo=FALSE, include=FALSE, message=FALSE}
 treated_math_09_10 <- select(math_assessment_09_10, stnam, leaid, 
-                             leanm, ncessch, schnam09, all_mth00pctprof_0910)
+                              leanm, ncessch, schnam09, all_mth00pctprof_0910)
+treated_math_10_11 <- select(math_assessment_10_11, stnam, leaid, 
+                              leanm10, ncessch, schnam10, all_mth00pctprof_1011)
+treated_math_11_12 <- select(math_assessment_11_12, stnam, leaid, 
+                              leanm, ncessch, schnam11, all_mth00pctprof_1112)
+treated_math_12_13 <- select(math_assessment_12_13, stnam, leaid, 
+                              leanm, ncessch, schnam, all_mth00pctprof_1213)
 treated_math_13_14 <- select(math_assessment_13_14, stnam, leaid, 
                               leanm, ncessch, schnam, all_mth00pctprof_1314)
-merged_math <- merge(treated_math_09_10, treated_math_13_14, by= "ncessch")
+merged_math <- merge(treated_math_09_10, treated_math_10_11, by= "ncessch")
 merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
-                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1314)
+                      leaid.x, leanm, all_mth00pctprof_0910, all_mth00pctprof_1011)
+merged_math <- merge(merged_math, treated_math_11_12, by= "ncessch")
+merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
+                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
+                      all_mth00pctprof_1112)
+merged_math <- merge(merged_math, treated_math_12_13, by= "ncessch")
+merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
+                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
+                      all_mth00pctprof_1112, all_mth00pctprof_1213)
+merged_math <- merge(merged_math, treated_math_13_14, by= "ncessch")
+merged_math <- select(merged_math, ncessch, schnam09, stnam.x, 
+                      leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1011,
+                      all_mth00pctprof_1112, all_mth00pctprof_1213, all_mth00pctprof_1314)
 merged_math
 ```
 ```{r echo=FALSE, include=FALSE, message=FALSE}
-### Create Treatment DataSet ###
-results_treated <- merge(treated_all_cohorts, merged_math, by= "ncessch")
-results_treated <- filter(results_treated,
+### Treated dataset with all school years
+results_treated_all <- merge(treated_all_cohorts, merged_math, by= "ncessch")
+results_treated_all <- filter(results_treated_all,
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_0910) )
-results_treated <- filter(results_treated, 
+results_treated_all <- filter(results_treated_all,
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_1011) )
+results_treated_all <- filter(results_treated_all,
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_1112) )
+results_treated_all <- filter(results_treated_all,
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_1213) )
+results_treated_all <- filter(results_treated_all, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1314) )
-results_treated <- select(results_treated, ncessch, schnam09, stnam.x, 
-                          leaid.x, leanm.x, all_mth00pctprof_0910, all_mth00pctprof_1314)
+results_treated_all <- select(results_treated_all, ncessch, schnam09, stnam.x, 
+                          leaid.x, leanm.x, 
+                          all_mth00pctprof_0910,all_mth00pctprof_1011, 
+                          all_mth00pctprof_1112,all_mth00pctprof_1213,
+                          all_mth00pctprof_1314)
+colnames(results_treated_all) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "scores_0910","scores_1011","scores_1112","scores_1213", "scores_1314")
+
+### Create Treatment DataSet with only 2009-10 and 2013-14###
+results_treated <- filter(results_treated_all,
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 scores_0910) )
+results_treated <- filter(results_treated, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 scores_1314) )
+results_treated <- select(results_treated, ncessch, school_name, state, 
+                          lea_id, lea_name, scores_0910, scores_1314)
 colnames(results_treated) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "scores_0910", "scores_1314")
-results_treated
 ```
 # Introduction
 
@@ -101,41 +145,11 @@ To assess the effect of the SIG program, we wanted to observe the percentage cha
 
 The method we used to estimate the effects of the SIG programs was difference-in-differences (diff-in-diff). The initial difference between the treatment and control group was taken into account. Because the SIG program only awarded the schools that ranked as low performing, the average proficiency rate in the treatment group was substantially lower than the ones in the control group— hence we did not compare the differences of proficiency rate between treatment and control group. What we wanted to compare were the changes in the treatment group over time to changes in the control group over time. 
 
-# Summary Statistics
-
-The distribution of percentage rate in the treated group in the school years 2009-10 and 2013-14 are shown in Figure 1. We can see that most of the schools in the treated group have a proficiency rate under 50%, meaning a large portion of the students among these schools did not meet the proficient level in math assessment.    
-
-```{r echo=FALSE, message=FALSE, fig1, fig.height = 2, fig.width = 7}
-# Historgram of percentages of all cohorts
-library(tidyr)
-library(ggplot2)
-plot <- select(results_treated, "scores_0910","scores_1314")
-plot <- as.data.frame(plot)
-plot[,1:2] <- sapply(plot[,1:2], function(x) as.character(x))
-plot[,1:2] <- sapply(plot[,1:2], function(x) as.numeric(x))
-plot <- as.data.frame(plot)
-
-plot <- plot %>%
-  gather(key="text", value="value") %>%
-  mutate(text = gsub("\\.", " ",text)) %>%
-  mutate(value = round(as.numeric(value),0))
-
-plot %>%
-  ggplot( aes(x=value, color=text, fill=text)) +
-    geom_histogram(alpha=0.6, binwidth = 5) +
-    theme(
-      legend.position="none",
-      panel.spacing = unit(0.1, "lines"),
-      strip.text.x = element_text(size = 8)
-    ) +
-    xlab("Percentage") +
-    ylab("Counts") +
-    facet_wrap(~text)
-```
-Figure 1. Distribution of math proficiency rate in the treated group in 2009-10 and 2013-14  
 
 ```{r echo=FALSE, include=FALSE, message=FALSE}
 diff_in_diff_treated <- melt(results_treated, measure = 6:7)
+diff_in_diff_treated[,7] <- 
+sapply(diff_in_diff_treated[,7], function(x) as.character(x))
 diff_in_diff_treated[,7] <- 
 sapply(diff_in_diff_treated[,7], function(x) as.numeric(x))
 colnames(diff_in_diff_treated) <- c("ncessch", "school_name", "state", "lea_id",
@@ -144,11 +158,33 @@ diff_in_diff_treated <- filter(diff_in_diff_treated, cohort ==
                                  "scores_0910" | cohort == "scores_1314")
 ```
 ```{r echo=FALSE, include=FALSE, message=FALSE}
-### Create Control Group ###
-merged_math_cleaned <- merged_math
+### Create Control Group with all school years###
+merged_math_all <- merged_math
 unique_treated_schools <- melt(treated_schools, measure = 10:13)
 unique_treated_schools <- unique(unique_treated_schools$value)
-merged_math_cleaned <- filter(merged_math, !(ncessch %in% 
+merged_math_all <- filter(merged_math, !(ncessch %in% 
+                                as.numeric(unique_treated_schools)))
+merged_math_all <- filter(merged_math_all,
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_0910) )
+merged_math_all <- filter(merged_math_all,
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_1011) )
+merged_math_all <- filter(merged_math_all, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_1112) )
+merged_math_all <- filter(merged_math_all, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_1213) )
+merged_math_all <- filter(merged_math_all, 
+                          !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
+                                 all_mth00pctprof_1314) )
+
+### Create Control Group ###
+unique_treated_schools <- melt(treated_schools, measure = 10:13)
+unique_treated_schools <- unique(unique_treated_schools$value)
+merged_math_cleaned <- select(merged_math_all, all_mth00pctprof_0910, all_mth00pctprof_1314)
+merged_math_cleaned <- filter(merged_math_all, !(ncessch %in% 
                                 as.numeric(unique_treated_schools)))
 merged_math_cleaned <- filter(merged_math_cleaned,
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
@@ -156,47 +192,111 @@ merged_math_cleaned <- filter(merged_math_cleaned,
 merged_math_cleaned <- filter(merged_math_cleaned, 
                           !grepl("(([0-9]+[-][0-9]+)|([a-zA-Z]+[0-9]+)|([a-zA-z]+))",
                                  all_mth00pctprof_1314) )
-results_control <- data.frame()
+
+results_control_all <- data.frame()
+for (i in unique(results_treated$state)) {
+    count_state <- count(filter(results_treated, state == i))
+    filter_by_state <- which(merged_math_all$stnam.x == i)
+    #set.seed(123)
+    sample_by_state <- merged_math_all[sample(filter_by_state,
+                                                  as.numeric(count_state)),]
+    results_control_all <- rbind(results_control_all, sample_by_state)
+    }
+colnames(results_control_all) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "scores_0910","scores_1011","scores_1112","scores_1213", "scores_1314")
+
+
+results_control1 <- data.frame()
 for (i in unique(results_treated$state)) {
     count_state <- count(filter(results_treated, state == i))
     filter_by_state <- which(merged_math_cleaned$stnam.x == i)
-    set.seed(123)
+    #set.seed(123)
     sample_by_state <- merged_math_cleaned[sample(filter_by_state,
                                                   as.numeric(count_state)),]
-    results_control <- rbind(results_control, sample_by_state)
+    results_control1 <- rbind(results_control1, sample_by_state)
     }
-colnames(results_control) <- c("ncessch", "school_name", "state", "lea_id",
+colnames(results_control1) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "scores_0910", "scores_1314")
-diff_in_diff_controled <- melt(results_control, measure = 6:7)
-diff_in_diff_controled[,7] <- 
-sapply(diff_in_diff_controled[,7], function(x) as.numeric(x))
-colnames(diff_in_diff_controled) <- c("ncessch", "school_name", "state", "lea_id",
+results_control1 <- results_control1[,1:7]
+
+results_control2 <- data.frame()
+for (i in unique(results_treated$state)) {
+    count_state <- count(filter(results_treated, state == i))
+    filter_by_state <- which(merged_math_cleaned$stnam.x == i)
+    #set.seed(123)
+    sample_by_state <- merged_math_cleaned[sample(filter_by_state,
+                                                  as.numeric(count_state)),]
+    results_control2 <- rbind(results_control2, sample_by_state)
+    }
+colnames(results_control2) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "scores_0910", "scores_1314")
+results_control2 <- results_control2[,1:7]
+
+diff_in_diff_controled1 <- melt(results_control1, measure = 6:7)
+diff_in_diff_controled1[,7] <- 
+sapply(diff_in_diff_controled1[,7], function(x) as.character(x))
+diff_in_diff_controled1[,7] <- 
+sapply(diff_in_diff_controled1[,7], function(x) as.numeric(x))
+colnames(diff_in_diff_controled1) <- c("ncessch", "school_name", "state", "lea_id",
                                "lea_name", "cohort","percentage")
+
+diff_in_diff_controled2 <- melt(results_control2, measure = 6:7)
+diff_in_diff_controled2[,7] <- 
+sapply(diff_in_diff_controled2[,7], function(x) as.character(x))
+diff_in_diff_controled2[,7] <- 
+sapply(diff_in_diff_controled2[,7], function(x) as.numeric(x))
+colnames(diff_in_diff_controled2) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "cohort","percentage")
+
+#create fake treatment group
+results_treated_fake <- data.frame()
+for (i in unique(results_treated$state)) {
+    count_state <- count(filter(results_treated, state == i))
+    filter_by_state <- which(merged_math_cleaned$stnam.x == i)
+    #set.seed(123)
+    sample_by_state <- merged_math_cleaned[sample(filter_by_state,
+                                                  as.numeric(count_state)),]
+    results_treated_fake <- rbind(results_treated_fake, sample_by_state)
+    }
+colnames(results_treated_fake) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "scores_0910", "scores_1314")
+results_treated_fake <- results_treated_fake[,1:7]
+
+diff_in_diff_treated_fake <- melt(results_treated_fake, measure = 6:7)
+diff_in_diff_treated_fake[,7] <- 
+sapply(diff_in_diff_treated_fake[,7], function(x) as.character(x))
+diff_in_diff_treated_fake[,7] <- 
+sapply(diff_in_diff_treated_fake[,7], function(x) as.numeric(x))
+colnames(diff_in_diff_treated_fake) <- c("ncessch", "school_name", "state", "lea_id",
+                               "lea_name", "cohort","percentage")
+diff_in_diff_treated_fake <- filter(diff_in_diff_treated_fake, cohort == 
+                                 "scores_0910" | cohort == "scores_1314")
 ```
+
 ```{r echo=FALSE, include=FALSE, message=FALSE}
 ### Create diff in diff dataset with both treated and controlled groups ###
 diff_in_diff_treated <- mutate(diff_in_diff_treated, sig_program = "1")
-diff_in_diff_controled <- mutate(diff_in_diff_controled, sig_program = "0")
-diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
+diff_in_diff_treated_fake <- mutate(diff_in_diff_treated_fake, sig_program = "1")
+diff_in_diff_controled1 <- mutate(diff_in_diff_controled1, sig_program = "0")
+diff_in_diff_controled2 <- mutate(diff_in_diff_controled2, sig_program = "0")
+diff_in_diff_both1 <- rbind(diff_in_diff_controled1, diff_in_diff_treated)
+diff_in_diff_both2 <- rbind(diff_in_diff_controled2, diff_in_diff_treated)
+diff_in_diff_both_fake <- rbind(diff_in_diff_controled1, diff_in_diff_treated_fake)
 ```
 
-The distribution of the treatment group before and after the program implementation is shown in Figure 2. The mean of the proficiency rate in both school years remained under 40%. The maximum proficiency rate was 93% in the school year 2009-2010. The lowest proficiency rate was 2% in school year 2013-2014.   
+# Summary Statistics
+
+The distribution of the treatment group before and after the program implementation is shown in Figure 2. The mean of the proficiency rate in both school years remained under 40%. The maximum proficiency rate was 93% in the school year 2009-2010. The lowest proficiency rate was 2% in school year 2013-2014. The distribution of the control group is shown in Figure 3. In the control group, the mean of the proficiency rate across the five school years was above 60%. The maximum proficiency rate was 98% in both school years 2009-2010 and 2013-2014. The lowest proficiency rate was 5% in the school year 2013-2014. 
 
 ```{r echo=FALSE, include=TRUE, message=FALSE, fig2, fig.height = 5, fig.width = 7}
-boxplot(percentage ~ cohort, data = diff_in_diff_treated,
+diff_in_diff_boxplot <- rbind(diff_in_diff_treated, diff_in_diff_controled1)
+boxplot(percentage ~ cohort+sig_program, data = diff_in_diff_boxplot,
         xlab = "School Year", 
-        ylab = "Proficiency Rate", main = "Treatment Group Boxplot")
+        ylab = "Proficiency Rate", main = "Control Group and Treatment Group Boxplot")
 ```
-Figure 2. Treatment group summary statistics 
 
-The distribution of the control group is shown in Figure 3. In the control group, the mean of the proficiency rate across the five school years was above 60%. The maximum proficiency rate was 98% in both school years 2009-2010 and 2013-2014. The lowest proficiency rate was 5% in the school year 2013-2014.  
+Figure 1. Summary statistics
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig3, fig.height = 5, fig.width = 7}
-boxplot(percentage ~ cohort, data = diff_in_diff_controled,
-        xlab = "School Year", 
-        ylab = "Proficiency Rate", main = "Control Group Boxplot")
-```
-Figure 3. Control group summary statistics  
 
 # Research Question and Hypotheses
 
@@ -224,39 +324,61 @@ As previously mentioned, research done using this data could theoretically have 
 
 ## Construction of Treatment Group and Control Group 
 
-To assure the comparability of the treatment group and the control group, we ensured that the two groups had the composition in the distribution of schools across states. The distribution of schools across states in treatment group is shown in Figure 4, and the control group distribution is shown in Figure 5. 
+To assure the comparability of the treatment group and the control group, we ensured that the two groups had the composition in the distribution of schools across states. The distribution of schools across states in treatment group is shown in Figure 2, and the control group distribution is shown as Figure 5 in Appendix A. 
 
 ```{r echo=FALSE, include=TRUE, message=FALSE, fig4, fig.height = 4, fig.width = 7}
 ggplot(results_treated, aes(x=state)) +
   geom_bar()+
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
-Figure 4. Distribution of schools which implemented the SIG models across states 
+Figure 2. Distribution of schools which implemented the SIG models across states 
 
-```{r echo=FALSE, include=TRUE, message=FALSE, fig5, fig.height = 4, fig.width = 7}
-ggplot(results_control, aes(x=state)) +
-  geom_bar()+
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+According to the Parallel Trend Assumption, the difference between the 'treatment' and 'control' group is constant over time. To validate, we plot the data from 2009-10 (before the program implementation) to 2013-14 to observe the trends of the two groups. As shown in Figure 3, the two groups share a similar trend in the math proficiency rate.
+
+```{r}
+# Line chart to show the trends
+results_control_all[,6:10] <- sapply(results_control_all[,6:10], function(x) as.character(x))
+results_control_all[,6:10] <- sapply(results_control_all[,6:10], function(x) as.numeric(x))
+results_control_plot <- melt(results_control_all, measure = 6:10)
+control_plot <- aggregate(results_control_plot$value, list(results_control_plot$variable), mean)
+control_plot <- as.data.frame(control_plot)
+control_plot$x <- as.numeric(control_plot$x)
+
+results_treated_all[,6:10] <- sapply(results_treated_all[,6:10], function(x) as.character(x))
+results_treated_all[,6:10] <- sapply(results_treated_all[,6:10], function(x) as.numeric(x))
+results_treated_plot <- melt(results_treated_all, measure = 6:10)
+treated_plot <- aggregate(results_treated_plot$value, list(results_treated_plot$variable), mean)
+treated_plot <- as.data.frame(treated_plot)
+treated_plot$x <- as.numeric(treated_plot$x)
+# Basic line plot with points
+
+ggplot() + 
+  geom_line(data=control_plot, aes(x=Group.1, y=x, group=1), color = "blue") +
+  geom_line(data=treated_plot, aes(x=Group.1, y=x, group=1), color = "red") +
+  xlab('Dates') +
+  ylab('percent.change')
 ```
-Figure 5. Distribution of schools which did not implement the SIG models across states  
+
+
+Figure 3. Trends of control group and treatment group
 
 We plotted the proficiency rate change between 2009-10 and 2013-14 of each school in both treatment and control groups. As shown in Figure 6, there is no clear trend in either group.  
 
 ```{r echo=FALSE, include=TRUE, message=FALSE, fig6, fig.height = 4, fig.width = 7}
-diff_in_diff_both %>% 
+diff_in_diff_both1 %>% 
   ggplot(aes(x = cohort,
              y = percentage,
              color = sig_program
              )) +
   geom_point() +
-  geom_line(aes(group = ncessch), alpha = 0.2) +
+  geom_line(aes(group = ncessch), alpha = .2) +
   theme_minimal() +
   labs(x = "Cohorts",
        y = "Percentage",
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
 ```
-Figure 6. Proficiency rate of each school in both treatment and control groups 
+Figure 4. Proficiency rate of each school in both treatment and control groups 
 
 ## Linear Regression  
 
@@ -267,26 +389,77 @@ $$ Y_{i,t} = \beta0 + \beta1 \text{(Treatment group)}_{i} + \beta2 \text{(Year)}
 
 $\beta3$ is how much the treatment group changes after the treatment event compared to how much the control group changes after the treatment event, which is the term we care about.  
 
-### Model 1 
-Model 1 observes the change between school year 2009-10 and 2013-2014. As the results shown in Table 1 outline, the average difference of the differences is 4.20. The treatment group in year 2013-2014 has a 4.2 percent increase in math assessment rate on average. However, the p-value of $\beta3$ is 0.06—the effect of SIG program on math proficiency rate is insignificant.  
+### Model 1
+
+Model 1 observes the change between school year 2009-10 and 2013-2014. Within Table 1, the average difference of the differences is 4.20. The treatment group in year 2013-2014 has a 4.2 percent increase in math assessment rate on average. However, the p-value of β3 is 0.06. This means that the effect of the SIG programs on the math proficiency rate would be insignificant at a 0.05 alpha level, with us failing to reject the null hypothesis. This may still be a relevant finding, however, as this P value is still very low and is close to significant if we used an alpha level of 0.05.   
 
 ```{r echo=FALSE, include=TRUE, message=FALSE}
-cohort1 <- filter(diff_in_diff_both, cohort %in% c("scores_0910","scores_1314"))
-cohort1$cohort <- if_else(cohort1$cohort == "scores_0910", "0","1")
-cohort1$sig_program <- as.factor(cohort1$sig_program)
-cohort1$cohort <- as.factor(cohort1$cohort)
-cohort1 <- 
-  rename(cohort1, 
+model_control1 <- filter(diff_in_diff_both1, cohort %in% c("scores_0910","scores_1314"))
+model_control1$cohort <- if_else(model_control1$cohort == "scores_0910", "0","1")
+model_control1$sig_program <- as.factor(model_control1$sig_program)
+model_control1$cohort <- as.factor(model_control1$cohort)
+model_control1 <- 
+  rename(model_control1, 
     year = cohort
     )
-diff_in_diff_cohort1_model <- lm(percentage ~  sig_program*year, 
-                         data = cohort1)
-summ(diff_in_diff_cohort1_model, model.info = FALSE, model.fit = FALSE)
+diff_in_diff_model_control1 <- lm(percentage ~  sig_program*year, 
+                         data = model_control1)
+summ(diff_in_diff_model_control1, model.info = FALSE, model.fit = FALSE)
 ```
-Table 1. OLS for diff-in-diff between 2009-10 and 2013-2014  
+Table 1. OLS for diff-in-diff between 2009-10 and 2013-2014 
+
+According to a 2018 report by FutureEd, one of the reasons why more recently published federal reports may have reported no statistically significant improvements in student achievement at schools that implemented SIG programs is that these schools would need to have unrealistically large gains in achievement in order to consistently detect statistically significant improvement (Smith & Ginsburg, 2018). In turn, this may also play a role in our model as we were just shy of significance at a 0.05 alpha level.   
+
+### Model 2: Model with another control group
+
+To validate the model, we perform the diff-in-diff analysis with another comparison group to see if we would obtain similar estimates of the impact of the program. As shown in Table 2, the estimate of [something] is not too far away from [something] in Model 1. 
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
+model_control2 <- filter(diff_in_diff_both2, cohort %in% c("scores_0910","scores_1314"))
+model_control2$cohort <- if_else(model_control2$cohort == "scores_0910", "0","1")
+model_control2$sig_program <- as.factor(model_control2$sig_program)
+model_control2$cohort <- as.factor(model_control2$cohort)
+model_control2 <- 
+  rename(model_control2, 
+    year = cohort
+    )
+diff_in_diff_model_control2 <- lm(percentage ~  sig_program*year, 
+                         data = model_control2)
+summ(diff_in_diff_model_control2, model.info = FALSE, model.fit = FALSE)
+```
+Table 2. OLS for diff-in-diff between 2009-10 and 2013-2014 with another set of control group
+
+### Model 3: Model with fake treatment group
+
+Another validation method we used was to test the model on a fake treatment group that should not be affected by the program. As shown in Table 3, the estimate of difference is very small and p-value is insignificant. 
+
+```{r echo=FALSE, include=TRUE, message=FALSE}
+model_treatment_fake <- filter(diff_in_diff_both_fake, cohort %in% c("scores_0910","scores_1314"))
+model_treatment_fake$cohort <- if_else(model_treatment_fake$cohort == "scores_0910", "0","1")
+model_treatment_fake$sig_program <- as.factor(model_treatment_fake$sig_program)
+model_treatment_fake$cohort <- as.factor(model_treatment_fake$cohort)
+model_treatment_fake <- 
+  rename(model_treatment_fake, 
+    year = cohort
+    )
+diff_in_diff_model_both_fake <- lm(percentage ~sig_program*year, 
+                         data = model_treatment_fake)
+summ(diff_in_diff_model_both_fake, model.info = FALSE, model.fit = FALSE)
+```
+Table 3. OLS for diff-in-diff between 2009-10 and 2013-2014 with fake treatment group
 
 \pagebreak
 # Appendix A
+
+```{r echo=FALSE, include=TRUE, message=FALSE, fig5, fig.height = 4, fig.width = 7}
+ggplot(results_control1, aes(x=state)) +
+  geom_bar()+
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+Figure 5. Distribution of schools which did not implement the SIG models across states  
+
+\pagebreak
+# Appendix B
 
 ``````{r include=TRUE, ref.label=knitr::all_labels(), echo = T, eval = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), results='asis'}
 ```
@@ -302,6 +475,8 @@ https://CRAN.R-project.org/package=tidyr
 Kutash, J., Nico, E., Gorin, E., Rahmatullah, S., & Tallant, K. (2010). The school turnaround field guide. FSG Social Impact Advisors. https://www.wallacefoundation.org/knowledge-center/Documents/The-School-Turnaround-Field-Guide.pdf 
 
 Le Floch, K. C. (2018, January 22). Did school improvement grants work anywhere? American Institutes for Research. https://www.air.org/resource/did-school-improvement-grants-work-anywhere 
+
+Paul J. Gertler, Sebastian Martinez, Patrick Premand, Laura B. Rawlings & Christel M. J.                               Vermeersch, 2016. "Impact Evaluation in Practice, Second Edition," World Bank Publications, The World Bank, number 25030, March. 
 
 Public Impact, EdPlex, & Michael & Susan Dell Foundation. (2020). What is restart and why do it? School Restarts. https://www.schoolrestarts.org/what-is-restart-and-why-do-it/ 
 
