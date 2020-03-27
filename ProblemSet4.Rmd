@@ -1,7 +1,7 @@
 ---
 title: "The 3-billion School Improvement Grants (SIG) program has no significant effects on student outcome "
 author: "Sharon Allman, Diego Mamanche Castellano & Ke-Li Chiu"
-date: "11/03/2020"
+date: "22/03/2020"
 output:
   pdf_document:
     latex_engine: xelatex
@@ -207,7 +207,7 @@ diff_in_diff_boxplot <- rbind(diff_in_diff_treated_0910_1314, diff_in_diff_contr
 diff_in_diff_boxplot$value <- as.numeric(diff_in_diff_boxplot$value)
 boxplot(value ~ variable+sig_program, data = diff_in_diff_boxplot,
         xlab = "School Year", 
-        ylab = "Proficiency Rate", main = "Control Group and Treatment Group Boxplot")
+        ylab = "Math Proficiency Rate", main = "Control Group and Treatment Group Boxplot")
 ```
 Figure 1. Summary statistics 
 
@@ -223,11 +223,15 @@ H2: The SIG programs had a significant, positive effect on students’ performan
 
 # Ethical Issues
 
-This data was sourced from the United States Department of Education and is publicly available, so this data has been largely anonymized. This data does not contain specific demographic information that could directly identify any of the participants.  However, it does contain very specific information about the schools involved, especially the names of the schools and the states they are located in.  This may be problematic as this could be theoretically used to de-anonymize data specific to individuals if combined with other demographic data (about students/participants in relation to these states or the names of these schools).  It is unlikely that individual respondents would be able to request to have data related to them removed from this data, as this is data collected by the government and does not have personally identifying information.  Additionally, clearly identifying the worst-performing schools could be further stigmatizing to the institutions and individuals associated with them.   
+This data was sourced from the United States Department of Education and is publicly available, so logically this data has been largely anonymized. This data does not contain specific demographic information that could directly identify any of the participants.  However, it does contain very specific information about the schools involved, especially the names of the schools and the states they are located in.  This may be problematic as this could be theoretically used to de-anonymize data specific to individuals if combined with other demographic data (about students/participants in relation to these states or the names of these schools).  It is unlikely that individual respondents would be able to request to have data related to them removed from this data, as this is data collected by the government and does not have personally identifying information.  Additionally, clearly identifying the worst-performing schools could be further stigmatizing to the institutions and individuals associated with them.   
 
-This data is representative of the program as a whole, as this data is cumulative of most of the cases of this program within the specific time frames. Research done using this data may have higher external validity, as this data is representative of the population impacted by the program. However, it may be ethically ambiguous for the government to be publishing positive findings about their program (The U.S. Department of Education, 2013), when independent research sources (including us) were unable to demonstrate that this program had a significant impact (Le Floch, 2018).   
+This data should be representative of the program, as this data is cumulative of most of the cases of this program within the specific time frames. As such, research conducted with this data should also have higher external validity. However, it may be ethically ambiguous for the government to be publishing positive findings about their program (The U.S. Department of Education, 2013), when independent research sources were unable to demonstrate that this program had a significant impact (Le Floch, 2018).  Independent research firms have suggested that SIG programs should have been studied at the state level, as this would have provided more concise findings in terms of how the SIG schools were doing compared to their state counterparts, rather than comparing the best and worst cases in the country overall (Smith & Ginsburg, 2018). Even the U.S. Department of Education itself released a report after the fact outlining the ambiguity of the effectiveness of the program (Dragoset et al., 2017), contradicting what they had first reported in 2013 (The U.S. Department of Education, 2013).   
 
-The United States Department of Education has broad ethical guidelines in terms of collection, dissemination, and analysis of data.  However, ethical considerations specific to this program are not outlined in the data documentation or summary of findings.  A multidisciplinary team was assembled in order to conceptualize and implement these programs (Kutash et al., 2010), however, it is unclear if this was also the case when it came to the data collection and analysis.  This means that there may be some selection bias when it comes to the types of variables measured and reported on by the researchers.  This could have been mitigated by ensuring they reported a transparent process of how the data was collected and analyzed, including the documentation and human resources used to reduce sampling bias.   
+In terms of the contradictory reports published by the government itself, this leads into another issue with this data and research that uses it.  as multiple independent researchers have found, as well as the government itself, it is difficult to reproduce findings consistently.  Depending on how models are constructed and evaluated, you can both reach the conclusion that these programs were effective and ineffective.  This is a broader ethical issue in terms of both the reproducibility of the data within government studies as well as speaking to the quality and consistency of the data.   
+
+The U.S. Department of Education has broad ethical guidelines in terms of collection, dissemination, and analysis of data.  However, ethical considerations specific to this program are not outlined in the data documentation or summary of findings.  A multidisciplinary team was assembled in order to conceptualize and implement these programs (Kutash et al., 2010), however, it is unclear if this was also the case when it came to the data collection and analysis.  This means that there may be some selection bias when it comes to the types of variables measured and reported on by the researchers.  This could have been mitigated by ensuring they reported a transparent process of how the data was collected and analyzed, including the documentation and human resources used to reduce sampling bias.   
+
+Regarding the consent of the participants, especially as it was a government program, it is ambiguous if individual schools were able to opt out of data collection and subsequent government studies with this data while still being able to take part in SIG programs.  This would make sense on one hand, as it is very useful to collect data like this about programs in order to evaluate them later.  However, it does leave room for ethical issues regarding whether the schools or individuals themselves regarding informed consent (all students and faculty knew this data was being collected and what it was being collected for) and being able to provide consent not under any form of duress (not feeling like they needed to consent to data collection for fear of losing SIG funding).        
 
 # Weaknesses & Limitations
 
@@ -251,7 +255,8 @@ diff_in_diff_both <- rbind(diff_in_diff_controled, diff_in_diff_treated)
 ```{r echo=FALSE, include=TRUE, message=FALSE, fig4, fig.height = 3, fig.width = 7}
 ggplot(results_treated, aes(x=state)) +
   geom_bar()+
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+  labs(x = "States", y= "Number of schools")
 ```
 Figure 2. Distribution of schools which implemented the SIG models across states 
 
@@ -277,8 +282,8 @@ treated_plot$x <- as.numeric(treated_plot$x)
 plot<-ggplot() + 
   geom_line(data=control_plot, aes(x=Group.1, y=x, group=1), color = "blue") +
   geom_line(data=treated_plot, aes(x=Group.1, y=x, group=1), color = "red") +
-  xlab('Dates') +
-  ylab('percent.change')
+  xlab('School Years') +
+  ylab('Math Proficiency Rate')
 print(plot)
 ```
 Figure 3. Trends of control group and treatment group
@@ -296,8 +301,8 @@ diff_in_diff_both_0910_1314 %>%
   geom_point() +
   geom_line(aes(group = ncessch), alpha = 0.2) +
   theme_minimal() +
-  labs(x = "Cohorts",
-       y = "Percentage",
+  labs(x = "School Years",
+       y = "Math Proficiency Rate",
        color = "SIG pogram") +
   scale_color_brewer(palette = "Set1")
 ```
@@ -435,7 +440,8 @@ Table 3. OLS for diff-in-diff between 2009-10 and 2013-2014 with fake treatment 
 ```{r echo=FALSE, include=TRUE, message=FALSE, fig5, fig.height = 4, fig.width = 7}
 ggplot(results_control, aes(x=state)) +
   geom_bar()+
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))+
+  labs(x = "States", y= "Number of schools")
 ```
 Figure 5. Distribution of schools which did not implement the SIG models across states  
 
@@ -446,19 +452,39 @@ Figure 5. Distribution of schools which did not implement the SIG models across 
 ```
 \pagebreak
 # References
+
+David Hugh-Jones (2020). huxable: Easily Create and Style Tables for LaTeX, HTML and Other Formats. R package version 4.7.1. https://cran.r-project.org/web/packages/huxtable
+
 Dragoset, L., Thomas, J., Herrmann, M., Deke, J., &amp; James-Burdumy, S. (2017, January 27). School Improvement Grants: Implementation and Effectiveness Executive Summary (Rep.). Retrieved March 19, 2020, from U.S. Department of Education website: https://ies.ed.gov/ncee/pubs/20174013/pdf/20174012.pdf
+
 Hadley Wickham and Lionel Henry (2019). tidyr: Tidy Messy Data. R package version 1.0.0.
 https://CRAN.R-project.org/package=tidyr
+
+Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2018). dplyr: A Grammar of Data Manipulation. R package version
+  0.7.6. https://CRAN.R-project.org/package=dplyr
+
 Kutash, J., Nico, E., Gorin, E., Rahmatullah, S., & Tallant, K. (2010). The school turnaround field guide. FSG Social Impact Advisors. https://www.wallacefoundation.org/knowledge-center/Documents/The-School-Turnaround-Field-Guide.pdf 
+
 Le Floch, K. C. (2018, January 22). Did school improvement grants work anywhere? American Institutes for Research. https://www.air.org/resource/did-school-improvement-grants-work-anywhere 
+
 Public Impact, EdPlex, & Michael & Susan Dell Foundation. (2020). What is restart and why do it? School Restarts. https://www.schoolrestarts.org/what-is-restart-and-why-do-it/ 
+
 R Core Team (2019). R: A language and environment for statistical computing.  
+
 R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/. 
-The U.S. Department of Education. (2013). School improvement grants national summary school year 2012-13. https://www2.ed.gov/programs/sif/data/school-impro-grants-nat-sum-sy1213.pdf 
+
+The U.S. Department of Education. (2013). School improvement grants national summary school year 2012-13. 
+https://www2.ed.gov/programs/sif/data/school-impro-grants-nat-sum-sy1213.pdf 
+
 The U.S. Department of Education. (2015). SIG transformation model – required and permissible activities. https://www.alsde.edu/ofc/osl/SIG/SIG%20Transformation%20Model.pdf 
+
 Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software,
 4(43), 1686, https://doi.org/10.21105/joss.01686
+
+Wickham H (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York. ISBN 978-3-319-24277-4, https://ggplot2.tidyverse.org.
+
 Yihui Xie (2019). knitr: A General-Purpose Package for Dynamic Report Generation in R. R
 package version 1.25.
+
 Yihui Xie (2015) Dynamic Documents with R and knitr. 2nd edition. Chapman and Hall/CRC.
 ISBN 978-1498716963
